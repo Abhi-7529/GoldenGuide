@@ -26,8 +26,12 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // Refresh the auth token
-  await supabase.auth.getUser();
+  // Refresh the auth token; never let an auth hiccup take down the whole site
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    return NextResponse.next({ request });
+  }
 
   return response;
 }
