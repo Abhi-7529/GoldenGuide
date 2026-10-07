@@ -26,9 +26,11 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  // Refresh the auth token; never let an auth hiccup take down the whole site
+  // Refresh the auth token if it's close to expiring; never let an auth hiccup
+  // take down the whole site. getClaims verifies the JWT locally against the
+  // project's signing keys, so most requests skip the round trip to Supabase.
   try {
-    await supabase.auth.getUser();
+    await supabase.auth.getClaims();
   } catch {
     return NextResponse.next({ request });
   }
