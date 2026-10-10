@@ -1,4 +1,5 @@
 import { ContentList } from "~/components/admin/content-list";
+import { levelLabel } from "~/lib/learning-plan";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
 
@@ -20,7 +21,7 @@ export default async function AdminLessonsPage() {
       items={lessons.map((l) => ({
         id: l.id,
         title: l.title,
-        subtitle: `${l.topic}${l.summary ? ` · ${l.summary}` : ""}`,
+        subtitle: `${l.topic} · ${levelLabel(l.level)}${l.summary ? ` · ${l.summary}` : ""}`,
         status: l.status,
         aiGenerated: l.ai_generated,
         needsReview: l.ai_generated && !l.approved_at,

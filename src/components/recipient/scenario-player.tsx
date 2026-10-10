@@ -15,7 +15,10 @@ export function ScenarioPlayer({
   scenarios,
   userId,
 }: {
-  scenarios: Pick<Scenario, "id" | "title" | "prompt" | "choices">[];
+  scenarios: (Pick<Scenario, "id" | "title" | "prompt" | "choices"> & {
+    /** Why this situation was picked for the learner. */
+    reason?: string;
+  })[];
   userId: string;
 }) {
   const [index, setIndex] = useState(0);
@@ -58,6 +61,11 @@ export function ScenarioPlayer({
       )}
 
       <div className="flex flex-col gap-3 rounded-xl border-2 border-border bg-muted/40 p-5">
+        {scenario.reason && (
+          <p className="text-lg font-medium text-muted-foreground">
+            {scenario.reason}
+          </p>
+        )}
         <h2 className="text-2xl font-semibold">{scenario.title}</h2>
         <p className="text-xl leading-relaxed">{scenario.prompt}</p>
         {selected === null && (

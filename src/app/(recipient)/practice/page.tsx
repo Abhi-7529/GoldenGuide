@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { ScenarioPlayer } from "~/components/recipient/scenario-player";
+import { loadLearnerPath } from "~/lib/learning-plan";
 import { createClient } from "~/lib/supabase/server";
-import type { Scenario } from "~/lib/types";
 
 export default async function PracticePage() {
   const supabase = await createClient();
@@ -12,12 +12,9 @@ export default async function PracticePage() {
     redirect("/login");
   }
 
-  const { data } = await supabase
-    .from("practice_scenarios")
-    .select("id, title, prompt, choices")
-    .eq("status", "published")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+  // Situations come in recommended order: practice for lessons that felt
+  // harder first, then the learner's chosen topics, then ones not tried yet.
+  const { path } = await loadLearnerPath(supabase, userId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -30,11 +27,7 @@ export default async function PracticePage() {
       </div>
 
       <ScenarioPlayer
-        scenarios={
-          (data as
-            | Pick<Scenario, "id" | "title" | "prompt" | "choices">[]
-            | null) ?? []
-        }
+        scenarios={path.practice.map((p) => ({ ...p.item, reason: p.reason }))}
         userId={userId}
       />
     </div>

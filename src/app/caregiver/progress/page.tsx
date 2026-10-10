@@ -1,9 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SuggestLesson } from "~/components/caregiver/suggest-lesson";
+import { SuggestTopic } from "~/components/caregiver/suggest-topic";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import {
+  buildLearningPath,
+  loadLibrary,
+  loadPlans,
+  loadTopicSuggestions,
+} from "~/lib/learning-plan";
 import {
   bestPerLesson,
   buildWeeklySummary,
@@ -30,20 +37,15 @@ export default async function CaregiverProgressPage() {
   );
 
   const weekAgo = new Date(Date.now() - WEEK_MS);
-  const [{ completions, attempts }, { data: lessonRows }] = await Promise.all([
-    loadProgress(
-      supabase,
-      recipients.map((r) => r.partner_id),
-    ),
-    supabase
-      .from("lessons")
-      .select("id, title")
-      .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
-  ]);
-  const publishedLessons =
-    (lessonRows as { id: string; title: string }[] | null) ?? [];
+  const recipientIds = recipients.map((r) => r.partner_id);
+  const [{ completions, attempts }, library, plans, topicSuggestions] =
+    await Promise.all([
+      loadProgress(supabase, recipientIds),
+      loadLibrary(supabase),
+      loadPlans(supabase, recipientIds),
+      loadTopicSuggestions(supabase, { caregiverId }),
+    ]);
+  const publishedLessons = library.lessons;
   const publishedCount = publishedLessons.length;
   const suggestions = await loadSuggestions(
     supabase,
@@ -82,6 +84,20 @@ export default async function CaregiverProgressPage() {
             theirAttempts.filter((a) => new Date(a.created_at) >= weekAgo),
           );
           const finished = bestPerLesson(theirCompletions);
+          const plan = plans.get(r.partner_id) ?? null;
+          const path = buildLearningPath({
+            plan,
+            ...library,
+            completions: theirCompletions,
+            attempts: theirAttempts,
+          });
+          // Recommended lessons first, so the best fit is easy to suggest.
+          const lessonOptions = [
+            ...path.lessons.map((l) => l.item),
+            ...publishedLessons.filter(
+              (l) => !path.lessons.some((p) => p.item.id === l.id),
+            ),
+          ];
           const lastActive = [
             theirCompletions[0]?.completed_at,
             theirAttempts[0]?.created_at,
@@ -137,11 +153,22 @@ export default async function CaregiverProgressPage() {
                   </div>
                 </dl>
 
+                <SuggestTopic
+                  caregiverId={caregiverId}
+                  recipientId={r.partner_id}
+                  recipientName={name}
+                  plan={plan}
+                  path={path}
+                  suggestions={topicSuggestions.filter(
+                    (s) => s.care_recipient_id === r.partner_id,
+                  )}
+                />
+
                 <SuggestLesson
                   caregiverId={caregiverId}
                   recipientId={r.partner_id}
                   recipientName={name}
-                  lessons={publishedLessons.map((l) => ({
+                  lessons={lessonOptions.map((l) => ({
                     ...l,
                     finished: finished.some((f) => f.lesson_id === l.id),
                   }))}

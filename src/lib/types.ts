@@ -8,6 +8,8 @@ export type Connection = {
 
 export type ContentStatus = "draft" | "published";
 
+export type LessonLevel = "beginner" | "intermediate" | "advanced";
+
 export type LessonExample = {
   title: string;
   description: string;
@@ -29,6 +31,7 @@ export type Lesson = {
   examples: LessonExample[];
   key_takeaways: string[];
   practice_questions: PracticeQuestion[];
+  level: LessonLevel;
   status: ContentStatus;
   sort_order: number;
   ai_generated: boolean;

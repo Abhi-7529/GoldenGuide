@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IconUser, IconUsers } from "~/components/icons";
+import { LearningPlanForm } from "~/components/recipient/learning-plan-form";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -11,11 +12,18 @@ import { createClient } from "~/lib/supabase/client";
 import { cn } from "~/lib/utils";
 
 type Role = "caregiver" | "care_recipient";
-type Step = "checking" | "choose" | "code" | "code-shown";
+type Step =
+  | "checking"
+  | "choose"
+  | "plan"
+  | "caregiver-topics"
+  | "code"
+  | "code-shown";
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("checking");
+  const [userId, setUserId] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
@@ -77,11 +85,12 @@ export default function OnboardingPage() {
       return;
     }
 
+    setUserId(userData.user.id);
     if (role === "caregiver") {
       setGeneratedCode(profile?.invite_code ?? null);
-      setStep("code-shown");
+      setStep("caregiver-topics");
     } else {
-      setStep("code");
+      setStep("plan");
     }
   }
 
@@ -119,7 +128,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-lg flex-col justify-center gap-6 px-6 py-16">
+    <main
+      className={cn(
+        "mx-auto flex min-h-[calc(100vh-4rem)] flex-col justify-center gap-6 px-6 py-16",
+        step === "plan" || step === "caregiver-topics"
+          ? "max-w-2xl"
+          : "max-w-lg",
+      )}
+    >
       {step === "choose" && (
         <>
           <div className="flex flex-col gap-2 text-center">
@@ -175,6 +191,46 @@ export default function OnboardingPage() {
           {error && (
             <p className="text-center text-sm text-destructive">{error}</p>
           )}
+        </>
+      )}
+
+      {step === "plan" && userId && (
+        <>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">
+              Let's make your learning plan
+            </h1>
+            <p className="text-xl">
+              Answer three short questions, and we'll pick lessons that suit
+              you.
+            </p>
+          </div>
+          <LearningPlanForm
+            userId={userId}
+            mode="learner"
+            onSaved={() => setStep("code")}
+            onSkip={() => setStep("code")}
+          />
+        </>
+      )}
+
+      {step === "caregiver-topics" && userId && (
+        <>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold tracking-tight">
+              What should they learn about?
+            </h1>
+            <p className="text-muted-foreground">
+              Optional. You can also suggest topics later from your dashboard.
+            </p>
+          </div>
+          <LearningPlanForm
+            userId={userId}
+            mode="caregiver"
+            saveLabel="Save and continue"
+            onSaved={() => setStep("code-shown")}
+            onSkip={() => setStep("code-shown")}
+          />
         </>
       )}
 

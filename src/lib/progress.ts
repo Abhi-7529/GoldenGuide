@@ -10,8 +10,8 @@ type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 export const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** Scores below this share of correct answers are flagged as "harder". */
-const STRUGGLE_THRESHOLD = 0.6;
-const STRONG_THRESHOLD = 0.8;
+export const STRUGGLE_THRESHOLD = 0.6;
+export const STRONG_THRESHOLD = 0.8;
 
 export async function loadProgress(
   supabase: SupabaseClient,
@@ -103,7 +103,7 @@ export function bestPerLesson(completions: LessonCompletion[]) {
   );
 }
 
-function scoreOf(c: LessonCompletion) {
+export function scoreOf(c: LessonCompletion) {
   return c.question_count === 0 ? 1 : c.correct_count / c.question_count;
 }
 

@@ -3,9 +3,9 @@ import { redirect } from "next/navigation";
 import { IconArrowRight, IconCheck } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { bestPerLesson, formatDay, loadProgress } from "~/lib/progress";
+import { loadLearnerPath } from "~/lib/learning-plan";
+import { bestPerLesson, formatDay } from "~/lib/progress";
 import { createClient } from "~/lib/supabase/server";
-import type { Lesson } from "~/lib/types";
 
 export default async function MyProgressPage() {
   const supabase = await createClient();
@@ -16,20 +16,14 @@ export default async function MyProgressPage() {
     redirect("/login");
   }
 
-  const [{ completions, attempts }, { data: lessonRows }] = await Promise.all([
-    loadProgress(supabase, [userId]),
-    supabase
-      .from("lessons")
-      .select("id, title")
-      .eq("status", "published")
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
-  ]);
+  const { completions, attempts, lessons, path } = await loadLearnerPath(
+    supabase,
+    userId,
+  );
 
   const finished = bestPerLesson(completions);
-  const finishedIds = new Set(finished.map((l) => l.lesson_id));
-  const lessons = (lessonRows as Pick<Lesson, "id" | "title">[] | null) ?? [];
-  const nextLesson = lessons.find((l) => !finishedIds.has(l.id));
+  const next = path.lessons[0];
+  const nextLesson = next?.item;
   const practiced = new Set(attempts.map((a) => a.scenario_id)).size;
 
   return (
@@ -61,14 +55,15 @@ export default async function MyProgressPage() {
         </Card>
       </div>
 
-      {nextLesson && (
+      {next && nextLesson && (
         <Card className="border-2 border-primary/40 bg-primary/5">
           <CardContent className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <p className="text-lg font-medium text-muted-foreground">
                 {finished.length === 0
                   ? "A good place to start"
-                  : "Try this next"}
+                  : "Try this next"}{" "}
+                · {next.reason}
               </p>
               <p className="text-2xl font-semibold">{nextLesson.title}</p>
             </div>

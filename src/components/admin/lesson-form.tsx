@@ -15,11 +15,13 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { LEVELS, TOPICS, topicLabel, topicOfLesson } from "~/lib/learning-plan";
 import { createClient } from "~/lib/supabase/client";
 import type {
   ContentStatus,
   Lesson,
   LessonExample,
+  LessonLevel,
   PracticeQuestion,
 } from "~/lib/types";
 
@@ -52,6 +54,7 @@ export function LessonForm({ lesson }: { lesson?: Lesson }) {
   const router = useRouter();
   const [title, setTitle] = useState(lesson?.title ?? "");
   const [topic, setTopic] = useState(lesson?.topic ?? "General");
+  const [level, setLevel] = useState<LessonLevel>(lesson?.level ?? "beginner");
   const [summary, setSummary] = useState(lesson?.summary ?? "");
   const [body, setBody] = useState(lesson?.body ?? "");
   const [examples, setExamples] = useState<ExampleRow[]>(
@@ -80,6 +83,7 @@ export function LessonForm({ lesson }: { lesson?: Lesson }) {
   const [aiMessage, setAiMessage] = useState<string | null>(null);
 
   const needsApproval = aiGenerated && !approvedAt;
+  const matchedTopic = topicOfLesson({ topic, title });
   const takeawayList = takeaways
     .split("\n")
     .map((t) => t.trim())
@@ -194,6 +198,7 @@ export function LessonForm({ lesson }: { lesson?: Lesson }) {
     const values = {
       title: title.trim(),
       topic: topic.trim() || "General",
+      level,
       summary: summary.trim(),
       body,
       examples: cleanExamples,
@@ -406,14 +411,42 @@ export function LessonForm({ lesson }: { lesson?: Lesson }) {
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-3">
-        <div className="flex flex-col gap-1.5 sm:col-span-1">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
           <Label htmlFor="topic">Topic</Label>
           <Input
             id="topic"
+            list="topic-options"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
           />
+          <datalist id="topic-options">
+            {TOPICS.map((t) => (
+              <option key={t.id} value={t.lessonTopic} />
+            ))}
+          </datalist>
+          <p className="text-xs text-muted-foreground">
+            {matchedTopic
+              ? `Recommended to learners who pick “${topicLabel(matchedTopic)}”.`
+              : "Doesn't match a learning-plan topic, so it's only recommended by level."}
+          </p>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="level">Level</Label>
+          <Select
+            id="level"
+            value={level}
+            onChange={(e) => setLevel(e.target.value as LessonLevel)}
+          >
+            {LEVELS.map((l) => (
+              <option key={l.id} value={l.id}>
+                {l.label} ({l.id})
+              </option>
+            ))}
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Used to match lessons to each learner's knowledge level.
+          </p>
         </div>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="status">Status</Label>

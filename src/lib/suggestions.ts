@@ -87,8 +87,11 @@ export async function loadLearnerSuggestions(
   supabase: SupabaseClient,
   userId: string,
   connections: { partner_id: string; partner_full_name: string | null }[],
+  /** The learner's completions, if already loaded. */
+  loadedCompletions?: LessonCompletion[],
 ) {
-  const { completions } = await loadProgress(supabase, [userId]);
+  const completions =
+    loadedCompletions ?? (await loadProgress(supabase, [userId])).completions;
   const suggestions = await loadSuggestions(
     supabase,
     { recipientId: userId },
