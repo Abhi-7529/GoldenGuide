@@ -12,9 +12,9 @@ export default async function PracticePage() {
     redirect("/login");
   }
 
-  // Only situations related to the learner's lessons: today's lessons on
-  // Free, or assigned and finished lessons on Family. They come in
-  // recommended order: practice for lessons that felt harder first.
+  // Only situations related to the learner's lessons (their caregiver's
+  // choices, or today's lessons when learning alone), in recommended order:
+  // practice for lessons that felt harder first.
   const day = await loadLearnerDay(supabase, userId);
 
   return (
@@ -30,9 +30,9 @@ export default async function PracticePage() {
       <ScenarioPlayer
         scenarios={day.practice.map((p) => ({ ...p.item, reason: p.reason }))}
         emptyMessage={
-          day.unlimited
-            ? "Practice situations appear here once you start a lesson, or when your caregiver assigns one."
-            : "There are no practice situations for today's lessons yet. Try again after your next lesson."
+          day.waitingForCaregiver
+            ? "Practice opens once your caregiver chooses your lessons. Please check back soon."
+            : "There are no practice situations for your lessons yet. Try again after your next lesson."
         }
         userId={userId}
       />

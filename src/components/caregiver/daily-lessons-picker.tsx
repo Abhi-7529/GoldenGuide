@@ -103,7 +103,7 @@ export function DailyLessonsPicker({
             Pick up to {FREE_DAILY_LESSONS} lessons for {recipientName} today.
             Their practice will follow these lessons.
             {picked.length === 0 &&
-              ` Until you pick, GoldenGuide chooses from ${recipientName}'s learning plan.`}
+              ` ${recipientName} won't see any lessons today until you pick them.`}
           </p>
         </div>
         <span className="text-sm font-medium">
