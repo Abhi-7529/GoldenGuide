@@ -2,8 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { IconUser, IconUsers } from "~/components/icons";
-import { LearningPlanForm } from "~/components/recipient/learning-plan-form";
+import { IconArrowLeft, IconUser, IconUsers } from "~/components/icons";
+import {
+  LearningPlanForm,
+  type PlanAnswers,
+  savePlan,
+} from "~/components/recipient/learning-plan-form";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -23,8 +27,12 @@ type Step =
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("checking");
-  const [userId, setUserId] = useState<string | null>(null);
   const [fullName, setFullName] = useState("");
+  const [role, setRole] = useState<Role | null>(null);
+  // Plan answers are kept here so Back never loses them. Nothing is saved
+  // until the last step, so people can go back and fix their name or role.
+  const [plan, setPlan] = useState<PlanAnswers | null>(null);
+  const [profileCreated, setProfileCreated] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -55,66 +63,83 @@ export default function OnboardingPage() {
     })();
   }, [router]);
 
-  async function handleChooseRole(role: Role) {
+  function handleChooseRole(chosen: Role) {
     if (!fullName.trim()) {
       setError("Please enter your name.");
       return;
     }
-
     setError(null);
-    setLoading(true);
+    if (chosen !== role) setPlan(null);
+    setRole(chosen);
+    setStep(chosen === "caregiver" ? "caregiver-topics" : "plan");
+  }
 
+  /** Creates the profile once, then saves any plan answers. */
+  async function saveAccount(
+    answers: PlanAnswers | null,
+  ): Promise<
+    { userId: string; error: null } | { userId: null; error: string }
+  > {
     const supabase = createClient();
     const { data: userData } = await supabase.auth.getUser();
-
-    if (!userData.user) {
+    if (!userData.user || !role) {
       router.replace("/login");
-      return;
+      return { userId: null, error: "Please sign in again." };
     }
+    const userId = userData.user.id;
 
-    const { data: profile, error: insertError } = await supabase
-      .from("profiles")
-      .insert({ id: userData.user.id, role, full_name: fullName.trim() })
-      .select("invite_code")
-      .single();
-
-    setLoading(false);
-
-    if (insertError) {
-      setError(insertError.message);
-      return;
-    }
-
-    setUserId(userData.user.id);
-    if (role === "caregiver") {
+    if (!profileCreated) {
+      const { data: profile, error: insertError } = await supabase
+        .from("profiles")
+        .insert({ id: userId, role, full_name: fullName.trim() })
+        .select("invite_code")
+        .single();
+      if (insertError) return { userId: null, error: insertError.message };
+      setProfileCreated(true);
       setGeneratedCode(profile?.invite_code ?? null);
-      setStep("caregiver-topics");
-    } else {
-      setStep("plan");
     }
+
+    if (answers && (role === "care_recipient" || answers.topics.length > 0)) {
+      const planError = await savePlan(
+        userId,
+        role === "caregiver" ? "caregiver" : "learner",
+        answers,
+      );
+      if (planError) return { userId: null, error: planError };
+    }
+    return { userId, error: null };
   }
 
-  async function handleRedeemCode() {
+  /** Returns an error message, if saving failed. */
+  async function finishCaregiver(answers: PlanAnswers | null) {
+    setError(null);
+    const { error: saveError } = await saveAccount(answers);
+    if (!saveError) setStep("code-shown");
+    return saveError;
+  }
+
+  async function finishLearner(withCode: boolean) {
     setError(null);
     setLoading(true);
-
-    const supabase = createClient();
-    const { error: rpcError } = await supabase.rpc("redeem_invite_code", {
-      p_code: inviteCode.trim().toUpperCase(),
-    });
-
-    setLoading(false);
-
-    if (rpcError) {
-      setError(rpcError.message);
+    const { error: saveError } = await saveAccount(plan);
+    if (saveError) {
+      setLoading(false);
+      setError(saveError);
       return;
     }
 
-    router.push("/home");
-    router.refresh();
-  }
+    if (withCode) {
+      const supabase = createClient();
+      const { error: rpcError } = await supabase.rpc("redeem_invite_code", {
+        p_code: inviteCode.trim().toUpperCase(),
+      });
+      if (rpcError) {
+        setLoading(false);
+        setError(rpcError.message);
+        return;
+      }
+    }
 
-  function handleSkipCode() {
     router.push("/home");
     router.refresh();
   }
@@ -162,6 +187,7 @@ export default function OnboardingPage() {
               onClick={() => handleChooseRole("care_recipient")}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border border-border p-5 text-left transition-colors hover:bg-accent",
+                role === "care_recipient" && "border-2 border-primary",
                 "disabled:pointer-events-none disabled:opacity-50",
               )}
             >
@@ -177,6 +203,7 @@ export default function OnboardingPage() {
               onClick={() => handleChooseRole("caregiver")}
               className={cn(
                 "flex flex-col items-start gap-2 rounded-lg border border-border p-5 text-left transition-colors hover:bg-accent",
+                role === "caregiver" && "border-2 border-primary",
                 "disabled:pointer-events-none disabled:opacity-50",
               )}
             >
@@ -194,7 +221,7 @@ export default function OnboardingPage() {
         </>
       )}
 
-      {step === "plan" && userId && (
+      {step === "plan" && (
         <>
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold tracking-tight">
@@ -206,15 +233,32 @@ export default function OnboardingPage() {
             </p>
           </div>
           <LearningPlanForm
-            userId={userId}
             mode="learner"
-            onSaved={() => setStep("code")}
-            onSkip={() => setStep("code")}
+            initial={plan}
+            startAtEnd={plan !== null}
+            saveLabel="Next"
+            onSubmit={async (answers) => {
+              setPlan(answers);
+              setStep("code");
+              return null;
+            }}
+            onBack={
+              profileCreated
+                ? undefined
+                : (answers) => {
+                    setPlan(answers);
+                    setStep("choose");
+                  }
+            }
+            onSkip={() => {
+              setPlan(null);
+              setStep("code");
+            }}
           />
         </>
       )}
 
-      {step === "caregiver-topics" && userId && (
+      {step === "caregiver-topics" && (
         <>
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold tracking-tight">
@@ -225,12 +269,30 @@ export default function OnboardingPage() {
             </p>
           </div>
           <LearningPlanForm
-            userId={userId}
             mode="caregiver"
+            initial={plan}
             saveLabel="Save and continue"
-            onSaved={() => setStep("code-shown")}
-            onSkip={() => setStep("code-shown")}
+            onSubmit={(answers) => {
+              setPlan(answers);
+              return finishCaregiver(answers);
+            }}
+            onBack={
+              profileCreated
+                ? undefined
+                : (answers) => {
+                    setPlan(answers);
+                    setStep("choose");
+                  }
+            }
+            onSkip={async () => {
+              setPlan(null);
+              setLoading(true);
+              const skipError = await finishCaregiver(null);
+              setLoading(false);
+              setError(skipError);
+            }}
           />
+          {error && <p className="text-sm text-destructive">{error}</p>}
         </>
       )}
 
@@ -260,14 +322,32 @@ export default function OnboardingPage() {
 
           <div className="flex flex-col gap-2">
             <Button
-              onClick={handleRedeemCode}
+              onClick={() => finishLearner(true)}
               disabled={loading || !inviteCode.trim()}
             >
               {loading ? "Connecting..." : "Connect"}
             </Button>
-            <Button variant="ghost" onClick={handleSkipCode} disabled={loading}>
+            <Button
+              variant="ghost"
+              onClick={() => finishLearner(false)}
+              disabled={loading}
+            >
               Skip for now
             </Button>
+            {/* Once the account exists (a code failed), role and name are set. */}
+            {!profileCreated && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setError(null);
+                  setStep("plan");
+                }}
+                disabled={loading}
+              >
+                <IconArrowLeft />
+                Back
+              </Button>
+            )}
           </div>
         </>
       )}

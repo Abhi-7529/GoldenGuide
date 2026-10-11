@@ -16,29 +16,57 @@ import { cn } from "~/lib/utils";
 
 type Step = "topics" | "level" | "goals";
 
+export type PlanAnswers = {
+  topics: TopicId[];
+  level: LessonLevel;
+  goals: GoalId[];
+};
+
+/** Saves answers as the user's learning preferences. Returns an error message. */
+export async function savePlan(
+  userId: string,
+  mode: "learner" | "caregiver",
+  answers: PlanAnswers,
+) {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("learning_preferences")
+    .upsert(
+      mode === "learner"
+        ? { user_id: userId, ...answers }
+        : { user_id: userId, topics: answers.topics },
+    );
+  return error ? "Sorry, we couldn't save that. Please try again." : null;
+}
+
 /**
- * Asks one question at a time and saves the answers as a learning plan.
- * Caregivers only answer the topics question: those become suggestions for
- * the learner once they connect, and the learner decides whether to add them.
+ * Asks one question at a time. Caregivers only answer the topics question:
+ * those become suggestions for the learner once they connect, and the learner
+ * decides whether to add them.
  */
 export function LearningPlanForm({
-  userId,
   mode,
   initial,
+  startAtEnd = false,
   saveLabel = "Save my plan",
-  onSaved,
+  onSubmit,
+  onBack,
   onSkip,
 }: {
-  userId: string;
   mode: "learner" | "caregiver";
-  initial?: { topics: TopicId[]; level: LessonLevel; goals: GoalId[] };
+  initial?: PlanAnswers | null;
+  /** Open on the last question, e.g. when coming back from a later step. */
+  startAtEnd?: boolean;
   saveLabel?: string;
-  onSaved: () => void;
+  /** Called with the answers; returns an error message to show, if any. */
+  onSubmit: (answers: PlanAnswers) => Promise<string | null>;
+  /** Shows Back on the first question; gets the answers so far. */
+  onBack?: (answers: PlanAnswers) => void;
   onSkip?: () => void;
 }) {
   const steps: Step[] =
     mode === "learner" ? ["topics", "level", "goals"] : ["topics"];
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(startAtEnd ? steps.length - 1 : 0);
   const [topics, setTopics] = useState<TopicId[]>(initial?.topics ?? []);
   const [level, setLevel] = useState<LessonLevel>(initial?.level ?? "beginner");
   const [goals, setGoals] = useState<GoalId[]>(initial?.goals ?? []);
@@ -57,20 +85,9 @@ export function LearningPlanForm({
   async function save() {
     setSaving(true);
     setError(null);
-    const supabase = createClient();
-    const { error: saveError } = await supabase
-      .from("learning_preferences")
-      .upsert(
-        mode === "learner"
-          ? { user_id: userId, topics, level, goals }
-          : { user_id: userId, topics },
-      );
+    const message = await onSubmit({ topics, level, goals });
     setSaving(false);
-    if (saveError) {
-      setError("Sorry, we couldn't save that. Please try again.");
-      return;
-    }
-    onSaved();
+    setError(message);
   }
 
   function next() {
@@ -80,6 +97,15 @@ export function LearningPlanForm({
     }
     setStepIndex(stepIndex + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function back() {
+    setError(null);
+    if (stepIndex > 0) {
+      setStepIndex(stepIndex - 1);
+    } else {
+      onBack?.({ topics, level, goals });
+    }
   }
 
   return (
@@ -172,13 +198,8 @@ export function LearningPlanForm({
       )}
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        {stepIndex > 0 && (
-          <Button
-            size="xl"
-            variant="outline"
-            disabled={saving}
-            onClick={() => setStepIndex(stepIndex - 1)}
-          >
+        {(stepIndex > 0 || onBack) && (
+          <Button size="xl" variant="outline" disabled={saving} onClick={back}>
             <IconArrowLeft />
             Back
           </Button>

@@ -1,7 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { LearningPlanForm } from "~/components/recipient/learning-plan-form";
+import {
+  LearningPlanForm,
+  savePlan,
+} from "~/components/recipient/learning-plan-form";
 import type { LearningPlan } from "~/lib/learning-plan";
 
 export function EditLearningPlan({
@@ -14,12 +17,16 @@ export function EditLearningPlan({
   const router = useRouter();
   return (
     <LearningPlanForm
-      userId={userId}
       mode="learner"
-      initial={plan ?? undefined}
-      onSaved={() => {
-        router.push("/home");
-        router.refresh();
+      initial={plan}
+      onBack={() => router.push("/home")}
+      onSubmit={async (answers) => {
+        const error = await savePlan(userId, "learner", answers);
+        if (!error) {
+          router.push("/home");
+          router.refresh();
+        }
+        return error;
       }}
     />
   );
