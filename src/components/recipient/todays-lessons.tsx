@@ -2,34 +2,58 @@ import Link from "next/link";
 import { IconArrowRight, IconCheck } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import type { PathLesson } from "~/lib/learning-plan";
-import { FREE_DAILY_LESSONS } from "~/lib/membership";
+import { FREE_DAILY_LESSONS, type LearnerDay } from "~/lib/membership";
 
-/** The lessons a Free learner can do today, with the ones already done. */
+/**
+ * The lessons a learner can do: today's picks on Free (or from their plan
+ * when learning alone), or the lessons their caregiver assigned on Family.
+ */
 export function TodaysLessons({
-  lessons,
-  doneToday,
-  pickerName,
+  day,
+  caregiverName,
 }: {
-  lessons: PathLesson[];
-  doneToday: Set<string>;
-  /** The caregiver who chose today's lessons, if one did. */
-  pickerName: string | null;
+  day: LearnerDay;
+  /** The learner's caregiver, if they have one. */
+  caregiverName: string | null;
 }) {
-  const done = lessons.filter((l) => doneToday.has(l.id)).length;
+  const family = day.unlimited;
+  const title = family ? "Your lessons" : "Today's lessons";
+  const lessons = day.todayLessons;
+
+  if (day.waitingForCaregiver) {
+    return (
+      <Card className="border-2 border-primary/40">
+        <CardContent className="flex flex-col gap-3">
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          <p className="text-xl">
+            {caregiverName ?? "Your caregiver"} will choose your lessons
+            {family ? "" : " for today"}. Please check back soon.
+          </p>
+          <p className="text-lg text-muted-foreground">
+            You can use the button at the top to ask them for help.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const done = lessons.filter((l) => day.done.has(l.id)).length;
   const allDone = lessons.length > 0 && done === lessons.length;
+  const chosenBy = family || day.pickedBy ? caregiverName : null;
 
   return (
     <Card className="border-2 border-primary/40">
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-col gap-1">
-          <h2 className="text-2xl font-semibold">Today's lessons</h2>
+          <h2 className="text-2xl font-semibold">{title}</h2>
           <p className="text-lg text-muted-foreground">
-            {pickerName
-              ? `${pickerName} chose these for you.`
+            {chosenBy
+              ? `${chosenBy} chose these for you.`
               : "Picked from your learning plan."}{" "}
             {lessons.length > 0 &&
-              `You've done ${done} of ${lessons.length} today.`}
+              (family
+                ? `You've finished ${done} of ${lessons.length}.`
+                : `You've done ${done} of ${lessons.length} today.`)}
           </p>
         </div>
 
@@ -39,11 +63,14 @@ export function TodaysLessons({
             className="flex flex-col gap-2 rounded-xl border-2 border-primary/30 bg-primary/5 p-4"
           >
             <p className="text-xl font-semibold">
-              You've finished today's lessons. Wonderful work!
+              {family
+                ? "You've finished all your lessons. Wonderful work!"
+                : "You've finished today's lessons. Wonderful work!"}
             </p>
             <p className="text-lg">
-              New lessons will be ready tomorrow. You can practice as much as
-              you like until then.
+              {family
+                ? `${chosenBy ?? "Your caregiver"} can add more. You can practice as much as you like.`
+                : "New lessons will be ready tomorrow. You can practice as much as you like until then."}
             </p>
             <Button asChild size="xl" className="w-full sm:w-fit">
               <Link href="/practice">
@@ -61,7 +88,8 @@ export function TodaysLessons({
         ) : (
           <ul className="flex flex-col gap-3">
             {lessons.map((lesson) => {
-              const isDone = doneToday.has(lesson.id);
+              const isDone = day.done.has(lesson.id);
+              const note = day.notes.get(lesson.id);
               return (
                 <li
                   key={lesson.id}
@@ -78,8 +106,17 @@ export function TodaysLessons({
                         {lesson.title}
                       </span>
                       <span className="text-base text-muted-foreground">
-                        {isDone ? "Done today" : lesson.topic}
+                        {isDone
+                          ? family
+                            ? "Finished"
+                            : "Done today"
+                          : lesson.topic}
                       </span>
+                      {note && !isDone && (
+                        <span className="text-lg italic">
+                          “{note}” — {caregiverName ?? "Your caregiver"}
+                        </span>
+                      )}
                     </div>
                   </div>
                   <Button
@@ -100,8 +137,9 @@ export function TodaysLessons({
         )}
 
         <p className="text-base text-muted-foreground">
-          You can do up to {FREE_DAILY_LESSONS} lessons each day. Practice is
-          always unlimited.
+          {family
+            ? "There's no daily limit. Practice is always unlimited."
+            : `You can do up to ${FREE_DAILY_LESSONS} lessons each day. Practice is always unlimited.`}
         </p>
       </CardContent>
     </Card>

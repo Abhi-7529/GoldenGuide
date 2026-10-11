@@ -1,7 +1,6 @@
 // Caregiver-suggested lessons. A suggestion stays "pending" until the learner
 // finishes that lesson after it was suggested.
 
-import { loadProgress } from "~/lib/progress";
 import type { createClient } from "~/lib/supabase/server";
 import type { LessonCompletion } from "~/lib/types";
 
@@ -64,47 +63,4 @@ export async function loadSuggestions(
       finished_at: finished ?? null,
     };
   });
-}
-
-/** Pending suggestions for a learner, one per lesson, newest first. */
-export function pendingForLearner(suggestions: LessonSuggestion[]) {
-  const seen = new Set<string>();
-  return suggestions.filter((s) => {
-    // Hide suggestions for lessons that are no longer published.
-    if (s.finished_at || !s.lesson_title || seen.has(s.lesson_id)) {
-      return false;
-    }
-    seen.add(s.lesson_id);
-    return true;
-  });
-}
-
-/**
- * Pending suggestions for the signed-in learner, with the suggesting
- * caregiver's name. Used by the learner's Home and Lessons pages.
- */
-export async function loadLearnerSuggestions(
-  supabase: SupabaseClient,
-  userId: string,
-  connections: { partner_id: string; partner_full_name: string | null }[],
-  /** The learner's completions, if already loaded. */
-  loadedCompletions?: LessonCompletion[],
-) {
-  const completions =
-    loadedCompletions ?? (await loadProgress(supabase, [userId])).completions;
-  const suggestions = await loadSuggestions(
-    supabase,
-    { recipientId: userId },
-    completions,
-  );
-  const names = new Map(
-    connections.map((c) => [
-      c.partner_id,
-      c.partner_full_name || "Your caregiver",
-    ]),
-  );
-  return pendingForLearner(suggestions).map((s) => ({
-    ...s,
-    caregiver_name: names.get(s.caregiver_id) ?? "Your caregiver",
-  }));
 }

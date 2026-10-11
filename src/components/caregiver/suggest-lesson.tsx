@@ -90,8 +90,8 @@ export function SuggestLesson({
         <div>
           <h3 className="font-semibold">Assigned lessons</h3>
           <p className="text-sm text-muted-foreground">
-            {recipientName} sees these at the top of their Home page until they
-            finish them. Their practice follows the lessons you assign.
+            {recipientName} only sees the lessons you assign here, with no daily
+            limit. Their practice follows these lessons.
           </p>
         </div>
         {assigned.length > 0 && (

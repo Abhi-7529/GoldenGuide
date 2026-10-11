@@ -99,15 +99,19 @@ export async function loadMembership(
 }
 
 /**
- * The learner's path plus what they can do today. On Free, today's lessons
- * are the caregiver's picks, or else the top picks from their learning plan,
- * up to the daily limit. Practice only covers lessons they're working on.
+ * The learner's path plus the lessons they can do. A learner with a caregiver
+ * only does lessons the caregiver chose: assigned lessons on Family (no daily
+ * limit), or today's picks on Free (up to 5). Either way there are none until
+ * the caregiver chooses. A learner on their own gets the top lessons from
+ * their learning plan, up to the daily limit. Practice follows the lessons.
  */
 export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
   // The database decides the learner's today from their saved time zone.
   const { data: accessData } = await supabase.rpc("my_learning_access");
   const access = accessData as {
     unlimited?: boolean;
+    /** Has a caregiver who picks their lessons. */
+    managed?: boolean;
     today?: string;
     time_zone?: string;
   } | null;
@@ -123,8 +127,9 @@ export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
       .order("created_at", { ascending: true }),
     supabase
       .from("lesson_suggestions")
-      .select("lesson_id")
-      .eq("care_recipient_id", userId),
+      .select("lesson_id, note")
+      .eq("care_recipient_id", userId)
+      .order("created_at", { ascending: true }),
   ]);
 
   const unlimited = access?.unlimited;
@@ -136,21 +141,36 @@ export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
   );
 
   if (unlimited) {
-    const practiceIds = [
-      ...(assigned ?? []).map((a) => a.lesson_id as string),
-      ...learner.completions.map((c) => c.lesson_id),
+    // Family: the caregiver's assigned lessons, not done first.
+    const finished = new Set(learner.completions.map((c) => c.lesson_id));
+    const notes = new Map<string, string>();
+    for (const a of assigned ?? []) {
+      if (a.note) notes.set(a.lesson_id as string, a.note as string);
+    }
+    const assignedIds = [
+      ...new Set((assigned ?? []).map((a) => a.lesson_id as string)),
+    ].filter((id) => lessonsById.has(id));
+    const ordered = [
+      ...assignedIds.filter((id) => !finished.has(id)),
+      ...assignedIds.filter((id) => finished.has(id)),
     ];
     return {
       ...learner,
       unlimited: true as const,
-      todayLessons: null,
+      todayLessons: ordered
+        .map((id) => lessonsById.get(id))
+        .filter((l): l is PathLesson => !!l),
       /** The caregiver who picked today's lessons, if one did. */
       pickedBy: null,
+      waitingForCaregiver: assignedIds.length === 0,
+      /** Lessons that count as done: ever on Family, today on Free. */
+      done: finished,
+      notes,
       doneToday,
       practice: practiceForLessons(
         learner.path.practice,
         learner.lessons,
-        practiceIds,
+        assignedIds,
       ),
     };
   }
@@ -158,8 +178,9 @@ export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
   const pickIds = (pickRows ?? [])
     .map((p) => p.lesson_id as string)
     .filter((id) => lessonsById.has(id));
+  const managed = access?.managed ?? false;
   const todayIds =
-    pickIds.length > 0
+    pickIds.length > 0 || managed
       ? pickIds
       : [
           ...[...doneToday].filter((id) => lessonsById.has(id)),
@@ -179,6 +200,10 @@ export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
       pickIds.length > 0
         ? (((pickRows ?? [])[0]?.caregiver_id as string | undefined) ?? null)
         : null,
+    /** Their caregiver hasn't picked today's lessons yet. */
+    waitingForCaregiver: managed && pickIds.length === 0,
+    done: doneToday,
+    notes: new Map<string, string>(),
     doneToday,
     practice: practiceForLessons(
       learner.path.practice,
@@ -190,11 +215,10 @@ export async function loadLearnerDay(supabase: SupabaseClient, userId: string) {
 
 export type LearnerDay = Awaited<ReturnType<typeof loadLearnerDay>>;
 
-/** Whether the learner may open this lesson today. */
+/** Whether the learner may open this lesson now. */
 export function canOpenLesson(day: LearnerDay, lessonId: string) {
   return (
-    day.unlimited ||
     day.doneToday.has(lessonId) ||
-    (day.todayLessons?.some((l) => l.id === lessonId) ?? false)
+    day.todayLessons.some((l) => l.id === lessonId)
   );
 }

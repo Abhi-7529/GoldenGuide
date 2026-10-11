@@ -17,15 +17,15 @@ export default async function MyProgressPage() {
   }
 
   const day = await loadLearnerDay(supabase, userId);
-  const { completions, attempts, lessons, path } = day;
+  const { completions, attempts, lessons } = day;
 
   const finished = bestPerLesson(completions);
-  // On Free, "next" is the first of today's lessons not done yet.
-  const todayNext = day.todayLessons?.find((l) => !day.doneToday.has(l.id));
-  const next = day.unlimited
-    ? path.lessons[0]
-    : todayNext && { item: todayNext, reason: "One of today's lessons" };
-  const nextLesson = next?.item;
+  // "Next" is the first of the learner's lessons they haven't done yet.
+  const nextLesson = day.todayLessons.find((l) => !day.done.has(l.id));
+  const next = nextLesson && {
+    item: nextLesson,
+    reason: day.unlimited ? "Chosen for you" : "One of today's lessons",
+  };
   const practiced = new Set(attempts.map((a) => a.scenario_id)).size;
 
   return (
@@ -116,20 +116,13 @@ export default async function MyProgressPage() {
           ))}
         </section>
       ) : (
-        !nextLesson &&
-        day.unlimited && (
+        !nextLesson && (
           <Card>
             <CardContent className="py-8 text-center text-xl">
-              New lessons are on their way. Please check back soon.
+              Your lessons will show up here once you start them.
             </CardContent>
           </Card>
         )
-      )}
-
-      {day.unlimited && finished.length > 0 && !nextLesson && (
-        <p className="text-xl font-medium">
-          You've finished every lesson. Wonderful work!
-        </p>
       )}
     </div>
   );
