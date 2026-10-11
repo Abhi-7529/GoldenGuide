@@ -11,10 +11,18 @@ import type { Connection } from "~/lib/types";
 export function ConnectionManager({
   inviteCode,
   connections,
+  learnerLimit,
+  isFamily,
 }: {
   inviteCode: string;
   connections: Connection[];
+  learnerLimit: number;
+  isFamily: boolean;
 }) {
+  const connected = connections.filter(
+    (c) => c.partner_role === "care_recipient",
+  ).length;
+  const atLimit = connected >= learnerLimit;
   const router = useRouter();
   const [copied, setCopied] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -55,6 +63,26 @@ export function ConnectionManager({
           </Button>
         </CardContent>
       </Card>
+
+      <p className="text-sm">
+        {connected} of {learnerLimit} {learnerLimit === 1 ? "person" : "people"}{" "}
+        connected on your {isFamily ? "Family" : "Free"} plan.
+        {atLimit &&
+          (isFamily ? (
+            " You've reached the limit, so your code won't connect anyone new."
+          ) : (
+            <>
+              {" "}
+              Your code won't connect anyone new.{" "}
+              <Link
+                href="/caregiver/membership"
+                className="font-medium text-primary underline-offset-4 hover:underline"
+              >
+                Upgrade to Family to connect up to 3 people.
+              </Link>
+            </>
+          ))}
+      </p>
 
       <div className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold text-muted-foreground">

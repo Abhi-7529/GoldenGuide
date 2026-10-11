@@ -77,7 +77,12 @@ export function Navbar({
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-2">
+        <Link
+          // /dashboard sends signed-out visitors to the landing page, so it's
+          // safe to use until we know whether someone is signed in.
+          href={authReady && !email ? "/" : "/dashboard"}
+          className="flex items-center gap-2"
+        >
           <Logo className="size-10" />
           <span className="text-lg font-semibold tracking-tight">
             GoldenGuide

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { ScenarioPlayer } from "~/components/recipient/scenario-player";
-import { loadLearnerPath } from "~/lib/learning-plan";
+import { loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
 
 export default async function PracticePage() {
@@ -12,9 +12,10 @@ export default async function PracticePage() {
     redirect("/login");
   }
 
-  // Situations come in recommended order: practice for lessons that felt
-  // harder first, then the learner's chosen topics, then ones not tried yet.
-  const { path } = await loadLearnerPath(supabase, userId);
+  // Only situations related to the learner's lessons: today's lessons on
+  // Free, or assigned and finished lessons on Family. They come in
+  // recommended order: practice for lessons that felt harder first.
+  const day = await loadLearnerDay(supabase, userId);
 
   return (
     <div className="flex flex-col gap-6">
@@ -27,7 +28,12 @@ export default async function PracticePage() {
       </div>
 
       <ScenarioPlayer
-        scenarios={path.practice.map((p) => ({ ...p.item, reason: p.reason }))}
+        scenarios={day.practice.map((p) => ({ ...p.item, reason: p.reason }))}
+        emptyMessage={
+          day.unlimited
+            ? "Practice situations appear here once you start a lesson, or when your caregiver assigns one."
+            : "There are no practice situations for today's lessons yet. Try again after your next lesson."
+        }
         userId={userId}
       />
     </div>

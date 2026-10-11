@@ -14,12 +14,14 @@ const LETTERS = ["A", "B", "C", "D", "E", "F"];
 export function ScenarioPlayer({
   scenarios,
   userId,
+  emptyMessage = "New practice situations are on their way. Please check back soon.",
 }: {
   scenarios: (Pick<Scenario, "id" | "title" | "prompt" | "choices"> & {
     /** Why this situation was picked for the learner. */
     reason?: string;
   })[];
   userId: string;
+  emptyMessage?: string;
 }) {
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
@@ -29,7 +31,7 @@ export function ScenarioPlayer({
     return (
       <Card>
         <CardContent className="py-10 text-center text-xl">
-          New practice situations are on their way. Please check back soon.
+          {emptyMessage}
         </CardContent>
       </Card>
     );

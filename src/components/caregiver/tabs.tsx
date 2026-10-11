@@ -8,13 +8,14 @@ const tabs = [
   { href: "/caregiver/progress", label: "Learning Progress" },
   { href: "/caregiver/activity", label: "Activity" },
   { href: "/caregiver/connection", label: "Manage Connection" },
+  { href: "/caregiver/membership", label: "Membership" },
 ];
 
 export function CaregiverTabs() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 border-b border-border">
+    <nav className="flex gap-1 overflow-x-auto border-b border-border">
       {tabs.map((tab) => {
         const active = pathname === tab.href;
         return (
@@ -22,7 +23,7 @@ export function CaregiverTabs() {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "border-b-2 px-4 py-3 text-sm font-medium transition-colors",
+              "shrink-0 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors",
               active
                 ? "border-primary text-foreground"
                 : "border-transparent text-muted-foreground hover:text-foreground",

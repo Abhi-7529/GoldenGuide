@@ -8,6 +8,7 @@ import {
   type PlanAnswers,
   savePlan,
 } from "~/components/recipient/learning-plan-form";
+import { deviceTimeZone } from "~/components/time-zone-sync";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -91,7 +92,12 @@ export default function OnboardingPage() {
     if (!profileCreated) {
       const { data: profile, error: insertError } = await supabase
         .from("profiles")
-        .insert({ id: userId, role, full_name: fullName.trim() })
+        .insert({
+          id: userId,
+          role,
+          full_name: fullName.trim(),
+          time_zone: deviceTimeZone(),
+        })
         .select("invite_code")
         .single();
       if (insertError) return { userId: null, error: insertError.message };

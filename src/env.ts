@@ -8,6 +8,11 @@ export const env = createEnv({
       .default("development"),
     // Server-only Supabase vars can go here if needed
     AI_GATEWAY_API_KEY: z.string().min(1),
+    // Writes verified Stripe subscription data. Never expose to the browser.
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
+    // Optional locally; required for the Stripe webhook endpoint.
+    STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -18,6 +23,9 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
+    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

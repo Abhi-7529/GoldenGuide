@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { IconArrowRight, IconBook } from "~/components/icons";
+import { TodaysLessons } from "~/components/recipient/todays-lessons";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
-import {
-  levelLabel,
-  loadLearnerPath,
-  type PathLesson,
-} from "~/lib/learning-plan";
+import { levelLabel, type PathLesson } from "~/lib/learning-plan";
+import { loadLearnerDay } from "~/lib/membership";
 import { loadLearnerSuggestions } from "~/lib/suggestions";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
@@ -25,19 +23,44 @@ export default async function LearnPage() {
     redirect("/login");
   }
 
-  const [{ plan, lessons, path, completions }, { data: connections }] =
-    await Promise.all([
-      loadLearnerPath(supabase, userId),
-      supabase.rpc("get_my_connections"),
-    ]);
+  const [day, { data: connectionRows }] = await Promise.all([
+    loadLearnerDay(supabase, userId),
+    supabase.rpc("get_my_connections"),
+  ]);
+  const connections = (connectionRows as Connection[] | null) ?? [];
+
+  // Free plan: only today's lessons, up to the daily limit.
+  if (!day.unlimited) {
+    const picker = connections.find((c) => c.partner_id === day.pickedBy);
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight">Lessons</h1>
+          <p className="text-xl">
+            Each lesson is short and goes one step at a time.{" "}
+            <Link
+              href="/plan"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              {day.plan ? "Change my plan" : "Make my plan"}
+            </Link>
+          </p>
+        </div>
+        <TodaysLessons
+          lessons={day.todayLessons}
+          doneToday={day.doneToday}
+          pickerName={
+            day.pickedBy ? picker?.partner_full_name || "Your caregiver" : null
+          }
+        />
+      </div>
+    );
+  }
+
+  const { plan, lessons, path, completions } = day;
   const suggestedBy = new Map(
     (
-      await loadLearnerSuggestions(
-        supabase,
-        userId,
-        (connections as Connection[] | null) ?? [],
-        completions,
-      )
+      await loadLearnerSuggestions(supabase, userId, connections, completions)
     ).map((s) => [s.lesson_id, s.caregiver_name]),
   );
 
@@ -150,7 +173,7 @@ function LessonCard({
           {reason && <p className="text-lg font-medium">{reason}</p>}
           {suggestedBy && (
             <Badge className="px-3 py-1 text-base">
-              Suggested by {suggestedBy}
+              Chosen by {suggestedBy}
             </Badge>
           )}
           {lesson.summary && <p className="text-lg">{lesson.summary}</p>}

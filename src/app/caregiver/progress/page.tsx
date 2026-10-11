@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { DailyLessonsPicker } from "~/components/caregiver/daily-lessons-picker";
+import { MakeActiveButton } from "~/components/caregiver/make-active-button";
 import { SuggestLesson } from "~/components/caregiver/suggest-lesson";
 import { SuggestTopic } from "~/components/caregiver/suggest-topic";
 import { Badge } from "~/components/ui/badge";
@@ -11,6 +13,7 @@ import {
   loadPlans,
   loadTopicSuggestions,
 } from "~/lib/learning-plan";
+import { appDay, loadMembership } from "~/lib/membership";
 import {
   bestPerLesson,
   buildWeeklySummary,
@@ -38,13 +41,40 @@ export default async function CaregiverProgressPage() {
 
   const weekAgo = new Date(Date.now() - WEEK_MS);
   const recipientIds = recipients.map((r) => r.partner_id);
-  const [{ completions, attempts }, library, plans, topicSuggestions] =
-    await Promise.all([
-      loadProgress(supabase, recipientIds),
-      loadLibrary(supabase),
-      loadPlans(supabase, recipientIds),
-      loadTopicSuggestions(supabase, { caregiverId }),
-    ]);
+  // Each learner's "today" follows their own time zone.
+  const { data: dayRows } = await supabase.rpc("my_learners_today");
+  const learnerDays = new Map(
+    (
+      (dayRows as
+        | { learner_id: string; time_zone: string; today: string }[]
+        | null) ?? []
+    ).map((d) => [d.learner_id, d]),
+  );
+  const todays = [...new Set([...learnerDays.values()].map((d) => d.today))];
+  const [
+    { completions, attempts },
+    library,
+    plans,
+    topicSuggestions,
+    membership,
+    { data: pickRows },
+  ] = await Promise.all([
+    loadProgress(supabase, recipientIds),
+    loadLibrary(supabase),
+    loadPlans(supabase, recipientIds),
+    loadTopicSuggestions(supabase, { caregiverId }),
+    loadMembership(supabase),
+    supabase
+      .from("daily_lessons")
+      .select("care_recipient_id, lesson_id, day")
+      .eq("caregiver_id", caregiverId)
+      .in("day", todays.length ? todays : [appDay()])
+      .order("created_at", { ascending: true }),
+  ]);
+  const isFamily = membership.plan === "family";
+  const managed = new Set(membership.managed_ids);
+  const active = recipients.filter((r) => managed.has(r.partner_id));
+  const paused = recipients.filter((r) => !managed.has(r.partner_id));
   const publishedLessons = library.lessons;
   const publishedCount = publishedLessons.length;
   const suggestions = await loadSuggestions(
@@ -62,6 +92,55 @@ export default async function CaregiverProgressPage() {
         </p>
       </div>
 
+      {paused.length > 0 && (
+        <Card className="border-2 border-primary/40">
+          <CardContent className="flex flex-col gap-4">
+            <div>
+              <h2 className="font-semibold">
+                {active.length === 0
+                  ? "Choose who stays active"
+                  : "Paused on the Free plan"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                The Free plan includes 1 active learner. Everyone stays
+                connected and keeps their progress. Upgrade to Family to help up
+                to 3 people at once.
+              </p>
+            </div>
+            <ul className="flex flex-col gap-3">
+              {paused.map((r) => {
+                const name = r.partner_full_name || "Your learner";
+                return (
+                  <li
+                    key={r.connection_id}
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"
+                  >
+                    <span className="font-medium">
+                      {name}
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
+                        · Paused
+                      </span>
+                    </span>
+                    <MakeActiveButton
+                      recipientId={r.partner_id}
+                      label={
+                        active.length === 0
+                          ? `Keep ${name} active`
+                          : `Make ${name} my active learner`
+                      }
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+            <Button asChild size="sm" variant="outline" className="w-fit">
+              <Link href="/caregiver/membership">See GoldenGuide Family</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {recipients.length === 0 ? (
         <Card>
           <CardContent className="py-10 text-center text-muted-foreground">
@@ -70,8 +149,11 @@ export default async function CaregiverProgressPage() {
           </CardContent>
         </Card>
       ) : (
-        recipients.map((r) => {
+        active.map((r) => {
           const name = r.partner_full_name || "Your learner";
+          const learnerDay = learnerDays.get(r.partner_id);
+          const timeZone = learnerDay?.time_zone;
+          const today = learnerDay?.today ?? appDay(new Date(), timeZone);
           const theirCompletions = completions.filter(
             (c) => c.user_id === r.partner_id,
           );
@@ -164,18 +246,42 @@ export default async function CaregiverProgressPage() {
                   )}
                 />
 
-                <SuggestLesson
-                  caregiverId={caregiverId}
-                  recipientId={r.partner_id}
-                  recipientName={name}
-                  lessons={lessonOptions.map((l) => ({
-                    ...l,
-                    finished: finished.some((f) => f.lesson_id === l.id),
-                  }))}
-                  suggestions={suggestions.filter(
-                    (s) => s.care_recipient_id === r.partner_id,
-                  )}
-                />
+                {isFamily ? (
+                  <SuggestLesson
+                    caregiverId={caregiverId}
+                    recipientId={r.partner_id}
+                    recipientName={name}
+                    lessons={lessonOptions.map((l) => ({
+                      ...l,
+                      finished: finished.some((f) => f.lesson_id === l.id),
+                    }))}
+                    suggestions={suggestions.filter(
+                      (s) => s.care_recipient_id === r.partner_id,
+                    )}
+                  />
+                ) : (
+                  <DailyLessonsPicker
+                    caregiverId={caregiverId}
+                    recipientId={r.partner_id}
+                    recipientName={name}
+                    today={today}
+                    lessons={lessonOptions.map((l) => ({
+                      id: l.id,
+                      title: l.title,
+                      finished: finished.some((f) => f.lesson_id === l.id),
+                    }))}
+                    picked={(pickRows ?? [])
+                      .filter(
+                        (p) =>
+                          p.care_recipient_id === r.partner_id &&
+                          p.day === today,
+                      )
+                      .map((p) => p.lesson_id as string)}
+                    doneToday={theirCompletions
+                      .filter((c) => appDay(c.completed_at, timeZone) === today)
+                      .map((c) => c.lesson_id)}
+                  />
+                )}
 
                 <div className="flex flex-wrap gap-2">
                   <Button asChild size="sm">

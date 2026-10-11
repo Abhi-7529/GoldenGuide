@@ -2,14 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { IconArrowRight, IconBook, IconTarget } from "~/components/icons";
 import { ConnectCaregiverCard } from "~/components/recipient/connect-caregiver-card";
+import { TodaysLessons } from "~/components/recipient/todays-lessons";
 import { TopicSuggestionCard } from "~/components/recipient/topic-suggestion-card";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import {
-  loadLearnerPath,
-  loadTopicSuggestions,
-  topicLabel,
-} from "~/lib/learning-plan";
+import { loadTopicSuggestions, topicLabel } from "~/lib/learning-plan";
+import { loadLearnerDay } from "~/lib/membership";
 import { loadLearnerSuggestions } from "~/lib/suggestions";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
@@ -49,16 +47,15 @@ export default async function RecipientHomePage() {
 
   const { data: connectionRows } = await supabase.rpc("get_my_connections");
   const connections = (connectionRows as Connection[] | null) ?? [];
-  const [{ plan, path, completions }, topicSuggestions] = await Promise.all([
-    loadLearnerPath(supabase, userId),
+  const [day, topicSuggestions] = await Promise.all([
+    loadLearnerDay(supabase, userId),
     loadTopicSuggestions(supabase, { recipientId: userId }),
   ]);
-  const suggestions = await loadLearnerSuggestions(
-    supabase,
-    userId,
-    connections,
-    completions,
-  );
+  const { plan, path, completions } = day;
+  // Assigned lessons are a Family feature; on Free, today's lessons rule.
+  const suggestions = day.unlimited
+    ? await loadLearnerSuggestions(supabase, userId, connections, completions)
+    : [];
   const caregiverNames = new Map(
     connections.map((c) => [
       c.partner_id,
@@ -69,7 +66,7 @@ export default async function RecipientHomePage() {
   // Suggested lessons already have their own card above, so skip them here.
   const suggestedIds = new Set(suggestions.map((s) => s.lesson_id));
   const nextLesson = path.lessons.find((l) => !suggestedIds.has(l.item.id));
-  const nextPractice = path.practice[0];
+  const nextPractice = day.practice[0];
   const planTopics = plan?.topics ?? [];
   const seenTopics = new Set<string>(planTopics);
   const pendingTopics = topicSuggestions.filter((s) => {
@@ -91,7 +88,7 @@ export default async function RecipientHomePage() {
         <Card key={s.id} className="border-2 border-primary bg-primary/5">
           <CardContent className="flex flex-col gap-4">
             <p className="text-lg font-medium">
-              {s.caregiver_name} suggested a lesson for you
+              {s.caregiver_name} chose a lesson for you
             </p>
             <p className="text-2xl font-semibold leading-snug">
               {s.lesson_title}
@@ -120,7 +117,28 @@ export default async function RecipientHomePage() {
         />
       ))}
 
+      {!day.unlimited && (
+        <TodaysLessons
+          lessons={day.todayLessons}
+          doneToday={day.doneToday}
+          pickerName={
+            day.pickedBy
+              ? (caregiverNames.get(day.pickedBy) ?? "Your caregiver")
+              : null
+          }
+        />
+      )}
+      {!day.unlimited && plan && (
+        <Link
+          href="/plan"
+          className="-mt-4 w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Change my learning plan
+        </Link>
+      )}
+
       {plan ? (
+        day.unlimited &&
         (nextLesson || nextPractice) && (
           <Card className="border-2">
             <CardContent className="flex flex-col gap-5">

@@ -377,6 +377,30 @@ export function buildLearningPath({
   };
 }
 
+/**
+ * Keeps only practice related to the given lessons: scenarios linked to one
+ * of them, or unlinked scenarios on the same topic. Ranking is preserved.
+ */
+export function practiceForLessons(
+  practice: Recommendation<PathScenario>[],
+  lessons: PathLesson[],
+  lessonIds: Iterable<string>,
+) {
+  const ids = new Set(lessonIds);
+  const lessonsById = new Map(lessons.map((l) => [l.id, l]));
+  const topics = new Set(
+    [...ids]
+      .map((id) => lessonsById.get(id))
+      .map((l) => (l ? topicOfLesson(l) : null))
+      .filter((t): t is TopicId => !!t),
+  );
+  return practice.filter(({ item }) => {
+    if (item.lesson_id) return ids.has(item.lesson_id);
+    const topic = topicOfScenario(item, lessonsById);
+    return !!topic && topics.has(topic);
+  });
+}
+
 // ---------------------------------------------------------------------------
 // Loading
 // ---------------------------------------------------------------------------

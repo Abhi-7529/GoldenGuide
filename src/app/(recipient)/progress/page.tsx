@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { IconArrowRight, IconCheck } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { loadLearnerPath } from "~/lib/learning-plan";
+import { canOpenLesson, loadLearnerDay } from "~/lib/membership";
 import { bestPerLesson, formatDay } from "~/lib/progress";
 import { createClient } from "~/lib/supabase/server";
 
@@ -16,13 +16,15 @@ export default async function MyProgressPage() {
     redirect("/login");
   }
 
-  const { completions, attempts, lessons, path } = await loadLearnerPath(
-    supabase,
-    userId,
-  );
+  const day = await loadLearnerDay(supabase, userId);
+  const { completions, attempts, lessons, path } = day;
 
   const finished = bestPerLesson(completions);
-  const next = path.lessons[0];
+  // On Free, "next" is the first of today's lessons not done yet.
+  const todayNext = day.todayLessons?.find((l) => !day.doneToday.has(l.id));
+  const next = day.unlimited
+    ? path.lessons[0]
+    : todayNext && { item: todayNext, reason: "One of today's lessons" };
   const nextLesson = next?.item;
   const practiced = new Set(attempts.map((a) => a.scenario_id)).size;
 
@@ -99,21 +101,23 @@ export default async function MyProgressPage() {
                       {formatDay(lesson.completed_at)}
                     </span>
                   </p>
-                  {lesson.lesson_title && (
-                    <Link
-                      href={`/learn/${lesson.lesson_id}`}
-                      className="w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
-                    >
-                      Read it again
-                    </Link>
-                  )}
+                  {lesson.lesson_title &&
+                    canOpenLesson(day, lesson.lesson_id) && (
+                      <Link
+                        href={`/learn/${lesson.lesson_id}`}
+                        className="w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
+                      >
+                        Read it again
+                      </Link>
+                    )}
                 </div>
               </CardContent>
             </Card>
           ))}
         </section>
       ) : (
-        !nextLesson && (
+        !nextLesson &&
+        day.unlimited && (
           <Card>
             <CardContent className="py-8 text-center text-xl">
               New lessons are on their way. Please check back soon.
@@ -122,7 +126,7 @@ export default async function MyProgressPage() {
         )
       )}
 
-      {finished.length > 0 && !nextLesson && (
+      {day.unlimited && finished.length > 0 && !nextLesson && (
         <p className="text-xl font-medium">
           You've finished every lesson. Wonderful work!
         </p>
