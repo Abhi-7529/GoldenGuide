@@ -27,14 +27,21 @@ export function CaregiverSection() {
             adult's financial learning, while allowing them to remain in control
             of their own decisions.
           </p>
+          <p className="text-muted-foreground">
+            Here's an example of what you'll see after adding a family member —
+            like a parent — to your account.
+          </p>
         </div>
 
         <Card className="w-full shadow-md">
           <CardHeader className="gap-1">
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Caregiver View
+            <Badge variant="outline" className="mb-1 w-fit">
+              Example
+            </Badge>
+            <h3 className="text-lg font-semibold">Mom's Learning Progress</h3>
+            <span className="text-xs text-muted-foreground">
+              After 2 months on GoldenGuide
             </span>
-            <h3 className="text-lg font-semibold">Learning Progress</h3>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">

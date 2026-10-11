@@ -118,6 +118,47 @@ export function IconCheck(props: IconProps) {
   );
 }
 
+export function IconHome(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1Z" />
+    </svg>
+  );
+}
+
+export function IconArrowLeft(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M19 12H5M11 6l-6 6 6 6" />
+    </svg>
+  );
+}
+
+export function IconArrowRight(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+export function IconVolume(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M11 5 6 9H3v6h3l5 4Z" />
+      <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+    </svg>
+  );
+}
+
+export function IconStop(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+    </svg>
+  );
+}
+
 export function IconMenu(props: IconProps) {
   return (
     <svg aria-hidden="true" {...base} {...props}>
@@ -130,6 +171,43 @@ export function IconX(props: IconProps) {
   return (
     <svg aria-hidden="true" {...base} {...props}>
       <path d="m5 5 14 14M19 5 5 19" />
+    </svg>
+  );
+}
+
+export function IconUser(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <circle cx="12" cy="8" r="3.5" />
+      <path d="M4.5 20c0-3.9 3.4-7 7.5-7s7.5 3.1 7.5 7" />
+    </svg>
+  );
+}
+
+export function IconGoogle(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      {...props}
+    >
+      <path
+        fill="#4285F4"
+        d="M23.52 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.59-5.17 3.59-8.82z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.27 14.28A7.2 7.2 0 0 1 4.9 12c0-.79.14-1.56.37-2.28V6.63H1.29A11.96 11.96 0 0 0 0 12c0 1.94.46 3.77 1.29 5.37z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.63l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"
+      />
     </svg>
   );
 }

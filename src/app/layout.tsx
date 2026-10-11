@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Footer } from "~/components/landing/footer";
-import { Navbar } from "~/components/navbar";
+import { AppChrome } from "~/components/app-chrome";
 import { ThemeProvider } from "./theme-provider";
 import "./globals.css";
 
@@ -21,9 +20,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <ThemeProvider>
-          <Navbar />
-          {children}
-          <Footer />
+          <AppChrome>{children}</AppChrome>
         </ThemeProvider>
       </body>
     </html>
