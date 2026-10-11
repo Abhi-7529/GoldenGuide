@@ -23,7 +23,12 @@ export async function getFamilyPriceId() {
     currency: "usd",
     recurring: { interval: "month" },
     lookup_key: FAMILY_PRICE_LOOKUP_KEY,
-    product_data: { name: "GoldenGuide Family" },
+    product_data: {
+      name: "GoldenGuide Family",
+      // "Software as a service - personal use". Stripe needs a tax code to
+      // open checkout when Managed Payments (Stripe handles sales tax) is on.
+      tax_code: "txcd_10103000",
+    },
   });
   return price.id;
 }
