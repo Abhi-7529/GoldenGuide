@@ -3,7 +3,11 @@
 // the recorded data.
 
 import type { createClient } from "~/lib/supabase/server";
-import type { LessonCompletion, PracticeAttempt } from "~/lib/types";
+import type {
+  LessonCompletion,
+  PracticeAttempt,
+  SimulationAttempt,
+} from "~/lib/types";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -129,8 +133,13 @@ export function buildWeeklySummary(
   name: string,
   completions: LessonCompletion[],
   attempts: PracticeAttempt[],
+  simulationAttempts: SimulationAttempt[] = [],
 ): WeeklySummary {
-  if (completions.length === 0 && attempts.length === 0) {
+  if (
+    completions.length === 0 &&
+    attempts.length === 0 &&
+    simulationAttempts.length === 0
+  ) {
     return {
       active: false,
       sentences: [
@@ -164,6 +173,22 @@ export function buildWeeklySummary(
     const subject = sentences.length > 0 ? "They" : name;
     sentences.push(
       `${subject} practiced ${plural(situations, "money situation")}.`,
+    );
+  }
+
+  if (simulationAttempts.length > 0) {
+    // First answer per pretend scam, as in the Scam Practice score.
+    const first = new Map<string, SimulationAttempt>();
+    for (const a of [...simulationAttempts].sort((x, y) =>
+      x.created_at.localeCompare(y.created_at),
+    )) {
+      if (!first.has(a.simulation_id)) first.set(a.simulation_id, a);
+    }
+    const tried = first.size;
+    const safe = [...first.values()].filter((a) => a.is_safe).length;
+    const subject = sentences.length > 0 ? "They" : name;
+    sentences.push(
+      `${subject} tried ${plural(tried, "pretend scam")} and picked the safe choice first time in ${safe}.`,
     );
   }
 

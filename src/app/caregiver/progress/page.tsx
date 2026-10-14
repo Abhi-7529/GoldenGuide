@@ -21,6 +21,13 @@ import {
   loadProgress,
   WEEK_MS,
 } from "~/lib/progress";
+import {
+  levelLabel,
+  listChannels,
+  loadSimulationAttempts,
+  summarizeSimulations,
+  unlockedLevels,
+} from "~/lib/simulations";
 import { loadSuggestions } from "~/lib/suggestions";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
@@ -58,6 +65,7 @@ export default async function CaregiverProgressPage() {
     topicSuggestions,
     membership,
     { data: pickRows },
+    simulationAttempts,
   ] = await Promise.all([
     loadProgress(supabase, recipientIds),
     loadLibrary(supabase),
@@ -70,6 +78,7 @@ export default async function CaregiverProgressPage() {
       .eq("caregiver_id", caregiverId)
       .in("day", todays.length ? todays : [appDay()])
       .order("created_at", { ascending: true }),
+    loadSimulationAttempts(supabase, recipientIds),
   ]);
   const isFamily = membership.plan === "family";
   const managed = new Set(membership.managed_ids);
@@ -160,10 +169,15 @@ export default async function CaregiverProgressPage() {
           const theirAttempts = attempts.filter(
             (a) => a.user_id === r.partner_id,
           );
+          const theirSimulations = simulationAttempts.filter(
+            (a) => a.user_id === r.partner_id,
+          );
+          const scam = summarizeSimulations(theirSimulations);
           const summary = buildWeeklySummary(
             name,
             theirCompletions.filter((c) => new Date(c.completed_at) >= weekAgo),
             theirAttempts.filter((a) => new Date(a.created_at) >= weekAgo),
+            theirSimulations.filter((a) => new Date(a.created_at) >= weekAgo),
           );
           const finished = bestPerLesson(theirCompletions);
           const plan = plans.get(r.partner_id) ?? null;
@@ -183,6 +197,7 @@ export default async function CaregiverProgressPage() {
           const lastActive = [
             theirCompletions[0]?.completed_at,
             theirAttempts[0]?.created_at,
+            theirSimulations[0]?.created_at,
           ]
             .filter((d): d is string => !!d)
             .sort()
@@ -234,6 +249,58 @@ export default async function CaregiverProgressPage() {
                     </dd>
                   </div>
                 </dl>
+
+                <div className="flex flex-col gap-2 rounded-lg border border-border p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Scam practice
+                  </p>
+                  {scam.completed === 0 ? (
+                    <p className="text-sm text-muted-foreground">
+                      {name} hasn't tried a pretend scam yet. Scam Practice is
+                      free and unlimited on every plan.
+                    </p>
+                  ) : (
+                    <>
+                      <dl className="grid gap-4 text-sm sm:grid-cols-3">
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Pretend scams done
+                          </dt>
+                          <dd className="text-lg font-semibold">
+                            {scam.completed}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">
+                            Safe first choice
+                          </dt>
+                          <dd className="text-lg font-semibold">
+                            {Math.round((scam.accuracy ?? 0) * 100)}%
+                          </dd>
+                        </div>
+                        <div>
+                          <dt className="text-muted-foreground">Level</dt>
+                          <dd className="text-lg font-semibold">
+                            {levelLabel(unlockedLevels(scam).highest)}
+                          </dd>
+                        </div>
+                      </dl>
+                      {scam.needsWork.length > 0 ? (
+                        <p className="text-sm font-medium text-primary">
+                          Needs more practice with{" "}
+                          {listChannels(scam.needsWork)}. You might talk through
+                          these together.
+                        </p>
+                      ) : (
+                        scam.strong.length > 0 && (
+                          <p className="text-sm">
+                            Doing well with {listChannels(scam.strong)}.
+                          </p>
+                        )
+                      )}
+                    </>
+                  )}
+                </div>
 
                 <SuggestTopic
                   caregiverId={caregiverId}

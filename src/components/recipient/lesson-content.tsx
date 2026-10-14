@@ -7,6 +7,7 @@ import {
   IconArrowRight,
   IconBook,
   IconCheck,
+  IconShieldCheck,
 } from "~/components/icons";
 import { LessonQuestions } from "~/components/recipient/lesson-questions";
 import { ReadAloudButton } from "~/components/recipient/read-aloud-button";
@@ -128,11 +129,14 @@ export function LessonContent({
   exitHref,
   exitLabel,
   progressUserId,
+  practiceHref,
 }: {
   lesson: Lesson;
   exitHref: string;
   exitLabel: string;
   progressUserId?: string;
+  /** Scam Practice that goes with this lesson, offered when it's finished. */
+  practiceHref?: string;
 }) {
   const steps = buildSteps(lesson);
   const [stepIndex, setStepIndex] = useState(0);
@@ -321,6 +325,19 @@ export function LessonContent({
               Read it again
             </Button>
           </div>
+          {practiceHref && (
+            <div className="flex flex-col items-center gap-3 border-t border-primary/20 pt-5">
+              <p className="text-xl">
+                Ready to try what you learned on a pretend scam?
+              </p>
+              <Button asChild size="xl" variant="outline">
+                <Link href={practiceHref}>
+                  <IconShieldCheck />
+                  Practice spotting this scam
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

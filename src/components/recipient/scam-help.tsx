@@ -239,6 +239,17 @@ export function ScamHelp({
           </CardContent>
         </Card>
       )}
+
+      <p className="text-lg text-muted-foreground">
+        Want to get better at spotting scams?{" "}
+        <Link
+          href="/scam-practice"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Try a safe, pretend scam in Scam Practice
+        </Link>
+        .
+      </p>
     </div>
   );
 }
