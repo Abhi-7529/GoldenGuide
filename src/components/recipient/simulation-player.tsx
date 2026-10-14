@@ -189,7 +189,7 @@ export function SimulationPlayer({
           </div>
 
           {simulation.warning_signs.length > 0 && (
-            <div className="flex flex-col gap-3 rounded-xl border-2 border-amber-500/60 bg-amber-50 p-5 dark:bg-amber-950/40">
+            <div className="flex flex-col gap-3 rounded-xl border-2 border-amber-500/60 bg-amber-50 p-5 text-amber-950 dark:border-amber-400/60 dark:bg-amber-950/60 dark:text-amber-50">
               <p className="text-xl font-semibold">
                 Warning signs in this{" "}
                 {channelLabel(simulation.channel).toLowerCase()}
@@ -197,7 +197,7 @@ export function SimulationPlayer({
               <ul className="flex flex-col gap-2">
                 {simulation.warning_signs.map((sign) => (
                   <li key={sign} className="flex gap-3 text-xl leading-relaxed">
-                    <IconShieldAlert className="mt-1 size-6 shrink-0 text-amber-600" />
+                    <IconShieldAlert className="mt-1 size-6 shrink-0 text-amber-600 dark:text-amber-400" />
                     <span>{sign}</span>
                   </li>
                 ))}

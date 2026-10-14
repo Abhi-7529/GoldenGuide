@@ -103,7 +103,7 @@ export function LessonQuestions({
                   answered && isCorrect
                     ? "border-primary bg-primary text-primary-foreground"
                     : answered && isSelected
-                      ? "border-destructive bg-destructive text-white"
+                      ? "border-destructive bg-destructive text-white dark:bg-destructive/60"
                       : "border-border",
                 )}
               >

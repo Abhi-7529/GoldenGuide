@@ -13,7 +13,7 @@ export function PracticeBanner({ className }: { className?: string }) {
   return (
     <p
       className={cn(
-        "flex items-center gap-2 rounded-lg border-2 border-amber-500 bg-amber-100 px-3 py-2 text-lg font-bold text-amber-950 dark:bg-amber-950 dark:text-amber-100",
+        "flex items-center gap-2 rounded-lg border-2 border-amber-500 bg-amber-100 px-3 py-2 text-lg font-bold text-amber-950 dark:border-amber-400 dark:bg-amber-950 dark:text-amber-50",
         className,
       )}
     >
