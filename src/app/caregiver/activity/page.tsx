@@ -1,5 +1,6 @@
 import { Card, CardContent } from "~/components/ui/card";
 import { formatDay, loadProgress } from "~/lib/progress";
+import { loadSimulationAttempts } from "~/lib/simulations";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 
@@ -26,11 +27,11 @@ export default async function CaregiverActivityPage() {
   );
 
   const since = new Date(Date.now() - DAYS_SHOWN * 24 * 60 * 60 * 1000);
-  const { completions, attempts } = await loadProgress(
-    supabase,
-    recipients.map((r) => r.partner_id),
-    since,
-  );
+  const recipientIds = recipients.map((r) => r.partner_id);
+  const [{ completions, attempts }, simulationAttempts] = await Promise.all([
+    loadProgress(supabase, recipientIds, since),
+    loadSimulationAttempts(supabase, recipientIds, since),
+  ]);
 
   const items: ActivityItem[] = [
     ...completions.map((c) => ({
@@ -49,6 +50,14 @@ export default async function CaregiverActivityPage() {
       who: names.get(a.user_id) ?? "Your learner",
       text: `practiced “${a.scenario_title ?? "a money situation"}”`,
     })),
+    ...simulationAttempts.map((a) => ({
+      key: `scam-${a.user_id}-${a.simulation_id}-${a.created_at}`,
+      at: a.created_at,
+      who: names.get(a.user_id) ?? "Your learner",
+      text:
+        `tried the pretend scam “${a.simulation_title ?? "Scam practice"}” and ` +
+        (a.is_safe ? "picked the safe choice" : "picked a risky choice"),
+    })),
   ].sort((a, b) => b.at.localeCompare(a.at));
 
   return (
@@ -56,8 +65,8 @@ export default async function CaregiverActivityPage() {
       <div>
         <h1 className="text-xl font-semibold">Activity</h1>
         <p className="text-sm text-muted-foreground">
-          Lessons and practice from the people you support over the past{" "}
-          {DAYS_SHOWN} days.
+          Lessons, practice and scam practice from the people you support over
+          the past {DAYS_SHOWN} days.
         </p>
       </div>
 

@@ -117,3 +117,41 @@ export type PracticeAttempt = {
   created_at: string;
   scenario_title: string | null;
 };
+
+export type SimulationChannel = "text" | "email" | "phone" | "website";
+
+export type SimulationChoice = {
+  label: string;
+  feedback: string;
+  safe: boolean;
+};
+
+export type ScamSimulation = {
+  id: string;
+  title: string;
+  channel: SimulationChannel;
+  level: LessonLevel;
+  lesson_id: string | null;
+  situation: string;
+  sender: string;
+  subject: string;
+  body: string;
+  display_url: string;
+  choices: SimulationChoice[];
+  warning_signs: string[];
+  safest_action: string;
+  status: ContentStatus;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type SimulationAttempt = {
+  user_id: string;
+  simulation_id: string;
+  is_safe: boolean;
+  channel: SimulationChannel;
+  level: LessonLevel;
+  created_at: string;
+  simulation_title: string | null;
+};

@@ -4,6 +4,7 @@ import { IconArrowRight } from "~/components/icons";
 import { LessonContent } from "~/components/recipient/lesson-content";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { topicOfLesson } from "~/lib/learning-plan";
 import { canOpenLesson, loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
@@ -77,6 +78,11 @@ export default async function LessonPage({
         exitHref="/learn"
         exitLabel="Back to all lessons"
         progressUserId={userData.user?.id}
+        practiceHref={
+          topicOfLesson(lesson) === "scams"
+            ? `/scam-practice?lesson=${lesson.id}`
+            : undefined
+        }
       />
     </article>
   );

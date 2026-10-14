@@ -24,7 +24,7 @@ export function ContentList({
   noun,
   items,
 }: {
-  table: "lessons" | "practice_scenarios";
+  table: "lessons" | "practice_scenarios" | "scam_simulations";
   basePath: string;
   noun: string;
   items: Item[];

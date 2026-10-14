@@ -1,10 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { IconArrowRight, IconCheck } from "~/components/icons";
+import { IconArrowRight, IconCheck, IconShieldCheck } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { canOpenLesson, loadLearnerDay } from "~/lib/membership";
 import { bestPerLesson, formatDay } from "~/lib/progress";
+import {
+  levelLabel,
+  listChannels,
+  loadSimulationAttempts,
+  summarizeSimulations,
+  unlockedLevels,
+} from "~/lib/simulations";
 import { createClient } from "~/lib/supabase/server";
 
 export default async function MyProgressPage() {
@@ -16,7 +23,12 @@ export default async function MyProgressPage() {
     redirect("/login");
   }
 
-  const day = await loadLearnerDay(supabase, userId);
+  const [day, simulationAttempts] = await Promise.all([
+    loadLearnerDay(supabase, userId),
+    loadSimulationAttempts(supabase, [userId]),
+  ]);
+  const scam = summarizeSimulations(simulationAttempts);
+  const scamLevel = unlockedLevels(scam).highest;
   const { completions, attempts, lessons } = day;
 
   const finished = bestPerLesson(completions);
@@ -56,6 +68,59 @@ export default async function MyProgressPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="border-2">
+        <CardContent className="flex flex-col gap-3">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold">
+            <IconShieldCheck className="size-7 shrink-0 text-primary" />
+            Scam practice
+          </h2>
+          {scam.completed === 0 ? (
+            <p className="text-xl">
+              You haven't tried a pretend scam yet. It's a safe way to learn the
+              warning signs.
+            </p>
+          ) : (
+            <>
+              <p className="text-xl">
+                You tried {scam.completed} pretend{" "}
+                {scam.completed === 1 ? "scam" : "scams"} and picked the safe
+                choice first time in {scam.safe}. Your level:{" "}
+                <span className="font-semibold">{levelLabel(scamLevel)}</span>.
+              </p>
+              {scam.strong.length > 0 && (
+                <p className="text-xl">
+                  You're getting good at spotting{" "}
+                  <span className="font-semibold">
+                    {listChannels(scam.strong)}
+                  </span>
+                  .
+                </p>
+              )}
+              {scam.needsWork.length > 0 && (
+                <p className="text-xl">
+                  Worth more practice:{" "}
+                  <span className="font-semibold">
+                    {listChannels(scam.needsWork)}
+                  </span>
+                  .
+                </p>
+              )}
+            </>
+          )}
+          <Button
+            asChild
+            size="xl"
+            variant="outline"
+            className="w-full sm:w-fit"
+          >
+            <Link href="/scam-practice">
+              Go to Scam Practice
+              <IconArrowRight />
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       {next && nextLesson && (
         <Card className="border-2 border-primary/40 bg-primary/5">

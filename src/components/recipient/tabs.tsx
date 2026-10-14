@@ -7,6 +7,7 @@ import {
   IconHome,
   IconMessageCircle,
   IconShieldAlert,
+  IconShieldCheck,
   IconTarget,
   IconTrendingUp,
 } from "~/components/icons";
@@ -17,6 +18,7 @@ const tabs = [
   { href: "/home", label: "Home", icon: IconHome },
   { href: "/learn", label: "Lessons", icon: IconBook },
   { href: "/practice", label: "Practice", icon: IconTarget },
+  { href: "/scam-practice", label: "Scam Practice", icon: IconShieldCheck },
   { href: "/progress", label: "My Progress", icon: IconTrendingUp },
 ];
 
@@ -29,8 +31,8 @@ export function RecipientTabs({
 
   return (
     <nav aria-label="Main" className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {tabs.map((tab) => {
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        {tabs.map((tab, i) => {
           const active =
             pathname === tab.href || pathname.startsWith(`${tab.href}/`);
           const Icon = tab.icon;
@@ -41,6 +43,8 @@ export function RecipientTabs({
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 text-lg font-semibold transition-colors",
+                // An odd number of tabs: the last one fills the row on phones.
+                i === tabs.length - 1 && "col-span-2 sm:col-span-1",
                 active
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-foreground hover:border-primary/50 hover:bg-accent",
