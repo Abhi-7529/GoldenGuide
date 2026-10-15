@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { AboutSection } from "~/components/landing/about-section";
 import { CaregiverSection } from "~/components/landing/caregiver-section";
 import { CTA } from "~/components/landing/cta";
@@ -8,8 +9,17 @@ import { InteractiveDemo } from "~/components/landing/interactive-demo";
 import { ProblemSection } from "~/components/landing/problem-section";
 import { TrustSection } from "~/components/landing/trust-section";
 import { Reveal } from "~/components/reveal";
+import { createClient } from "~/lib/supabase/server";
 
-export default function Home() {
+export default async function Home() {
+  // The landing page is for new visitors. Signed-in people go straight to
+  // their own home, so nobody is left wondering how to get back to it.
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  if (claimsData?.claims.sub) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="flex flex-col">
       <Hero />
