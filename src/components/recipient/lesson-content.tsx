@@ -6,6 +6,7 @@ import {
   IconArrowLeft,
   IconArrowRight,
   IconBook,
+  IconCalculator,
   IconCheck,
   IconShieldCheck,
 } from "~/components/icons";
@@ -130,6 +131,7 @@ export function LessonContent({
   exitLabel,
   progressUserId,
   practiceHref,
+  budgetHref,
 }: {
   lesson: Lesson;
   exitHref: string;
@@ -137,6 +139,8 @@ export function LessonContent({
   progressUserId?: string;
   /** Scam Practice that goes with this lesson, offered when it's finished. */
   practiceHref?: string;
+  /** The Budget Calculator, offered after money-planning lessons. */
+  budgetHref?: string;
 }) {
   const steps = buildSteps(lesson);
   const [stepIndex, setStepIndex] = useState(0);
@@ -334,6 +338,19 @@ export function LessonContent({
                 <Link href={practiceHref}>
                   <IconShieldCheck />
                   Practice spotting this scam
+                </Link>
+              </Button>
+            </div>
+          )}
+          {budgetHref && (
+            <div className="flex flex-col items-center gap-3 border-t border-primary/20 pt-5">
+              <p className="text-xl">
+                Ready to try what you learned on a budget?
+              </p>
+              <Button asChild size="xl" variant="outline">
+                <Link href={budgetHref}>
+                  <IconCalculator />
+                  Open the budget calculator
                 </Link>
               </Button>
             </div>

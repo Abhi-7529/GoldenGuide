@@ -7,6 +7,7 @@ import { SuggestTopic } from "~/components/caregiver/suggest-topic";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { loadActivitySuggestions, loadSharedBudgets } from "~/lib/budget";
 import {
   buildLearningPath,
   loadLibrary,
@@ -66,6 +67,8 @@ export default async function CaregiverProgressPage() {
     membership,
     { data: pickRows },
     simulationAttempts,
+    sharedBudgets,
+    budgetSuggestions,
   ] = await Promise.all([
     loadProgress(supabase, recipientIds),
     loadLibrary(supabase),
@@ -79,6 +82,9 @@ export default async function CaregiverProgressPage() {
       .in("day", todays.length ? todays : [appDay()])
       .order("created_at", { ascending: true }),
     loadSimulationAttempts(supabase, recipientIds),
+    // Only budgets a learner chose to share with this caregiver come back.
+    loadSharedBudgets(supabase, caregiverId),
+    loadActivitySuggestions(supabase, { caregiverId }),
   ]);
   const isFamily = membership.plan === "family";
   const managed = new Set(membership.managed_ids);
@@ -194,6 +200,15 @@ export default async function CaregiverProgressPage() {
               (l) => !path.lessons.some((p) => p.item.id === l.id),
             ),
           ];
+          const theirBudgets = sharedBudgets.filter(
+            (b) => b.user_id === r.partner_id,
+          );
+          const theirBudgetActivities = budgetSuggestions.filter(
+            (s) => s.care_recipient_id === r.partner_id,
+          );
+          const budgetActivitiesDone = theirBudgetActivities.filter(
+            (s) => s.done_at,
+          ).length;
           const lastActive = [
             theirCompletions[0]?.completed_at,
             theirAttempts[0]?.created_at,
@@ -300,6 +315,32 @@ export default async function CaregiverProgressPage() {
                       )}
                     </>
                   )}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
+                  <div className="flex flex-col gap-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Budgeting
+                    </p>
+                    <p className="text-sm">
+                      {theirBudgetActivities.length === 0
+                        ? "No budget activities recommended yet"
+                        : `${budgetActivitiesDone} of ${theirBudgetActivities.length} recommended ${
+                            theirBudgetActivities.length === 1
+                              ? "activity"
+                              : "activities"
+                          } done`}
+                      {" · "}
+                      {theirBudgets.length === 0
+                        ? "No shared budgets"
+                        : `${theirBudgets.length} shared ${
+                            theirBudgets.length === 1 ? "budget" : "budgets"
+                          }`}
+                    </p>
+                  </div>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/caregiver/budgets">Open Budgets</Link>
+                  </Button>
                 </div>
 
                 <SuggestTopic

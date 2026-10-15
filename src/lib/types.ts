@@ -155,3 +155,44 @@ export type SimulationAttempt = {
   created_at: string;
   simulation_title: string | null;
 };
+
+export type BudgetPeriod = "weekly" | "monthly" | "yearly";
+export type BudgetMode = "simple" | "advanced";
+export type BudgetTemplateId =
+  | "retirement"
+  | "fixed_income"
+  | "household"
+  | "blank";
+
+export type BudgetCategoryId =
+  | "housing"
+  | "groceries"
+  | "utilities"
+  | "transportation"
+  | "healthcare"
+  | "entertainment"
+  | "savings"
+  | "custom";
+
+/** One income source or expense. Amounts are always monthly dollars. */
+export type BudgetLine = {
+  id: string;
+  label: string;
+  amount: number;
+  category: BudgetCategoryId;
+};
+
+export type PracticeBudget = {
+  id: string;
+  user_id: string;
+  name: string;
+  template: BudgetTemplateId;
+  period: BudgetPeriod;
+  mode: BudgetMode;
+  income: BudgetLine[];
+  expenses: BudgetLine[];
+  savings_goal: number;
+  shared_with: string | null;
+  created_at: string;
+  updated_at: string;
+};
