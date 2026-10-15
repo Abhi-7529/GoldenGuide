@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { IconArrowRight, IconBook, IconTarget } from "~/components/icons";
+import {
+  IconArrowRight,
+  IconBook,
+  IconCalculator,
+  IconTarget,
+} from "~/components/icons";
 import { ConnectCaregiverCard } from "~/components/recipient/connect-caregiver-card";
 import { TodaysLessons } from "~/components/recipient/todays-lessons";
 import { TopicSuggestionCard } from "~/components/recipient/topic-suggestion-card";
@@ -26,6 +31,13 @@ const choices = [
     title: "Practice a money choice",
     description: "Try a real-life situation. There is no wrong answer here.",
     action: "Start practicing",
+  },
+  {
+    href: "/budget",
+    icon: IconCalculator,
+    title: "Plan a budget",
+    description: "Plan your own money, or practice with a made-up example.",
+    action: "Open the calculator",
   },
 ];
 
@@ -112,7 +124,7 @@ export default async function RecipientHomePage() {
         </Card>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {choices.map((choice) => {
           const Icon = choice.icon;
           return (

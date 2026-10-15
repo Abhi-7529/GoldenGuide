@@ -9,6 +9,9 @@ import { canOpenLesson, loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
 
+// Lessons on these topics end with a link to the Budget Calculator.
+const BUDGET_TOPICS = new Set<string>(["budgeting", "bills", "savings"]);
+
 export default async function LessonPage({
   params,
 }: {
@@ -82,6 +85,9 @@ export default async function LessonPage({
           topicOfLesson(lesson) === "scams"
             ? `/scam-practice?lesson=${lesson.id}`
             : undefined
+        }
+        budgetHref={
+          BUDGET_TOPICS.has(topicOfLesson(lesson) ?? "") ? "/budget" : undefined
         }
       />
     </article>

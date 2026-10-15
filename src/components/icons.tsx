@@ -110,6 +110,35 @@ export function IconPiggyBank(props: IconProps) {
   );
 }
 
+export function IconCalculator(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <rect x="5" y="2.5" width="14" height="19" rx="2" />
+      <path d="M8.5 6.5h7v3h-7z" />
+      <path
+        d="M8.5 13h.01M12 13h.01M15.5 13h.01M8.5 17h.01M12 17h.01M15.5 17h.01"
+        strokeWidth={2.25}
+      />
+    </svg>
+  );
+}
+
+export function IconPlus(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  );
+}
+
+export function IconDots(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...base} {...props}>
+      <path d="M5 12h.01M12 12h.01M19 12h.01" strokeWidth={3.5} />
+    </svg>
+  );
+}
+
 export function IconCheck(props: IconProps) {
   return (
     <svg aria-hidden="true" {...base} {...props}>

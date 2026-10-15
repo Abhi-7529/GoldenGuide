@@ -7,6 +7,7 @@ import { cn } from "~/lib/utils";
 const tabs = [
   { href: "/caregiver/progress", label: "Learning Progress" },
   { href: "/caregiver/activity", label: "Activity" },
+  { href: "/caregiver/budgets", label: "Budgets" },
   { href: "/caregiver/connection", label: "Manage Connection" },
   { href: "/caregiver/membership", label: "Membership" },
 ];
