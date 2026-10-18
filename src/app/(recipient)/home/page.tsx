@@ -122,7 +122,8 @@ export default async function RecipientHomePage() {
               ? `${doneToday} of ${day.todayLessons.length}`
               : doneToday
           }
-          label="done today"
+          // Family lessons stay until finished; Free ones reset each day.
+          label={day.unlimited ? "your lessons done" : "done today"}
         />
         <StatTile
           tone="green"
