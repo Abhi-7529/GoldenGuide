@@ -4,22 +4,38 @@ import {
   IconArrowRight,
   IconBook,
   IconCalculator,
+  IconCheck,
   IconTarget,
 } from "~/components/icons";
 import { ConnectCaregiverCard } from "~/components/recipient/connect-caregiver-card";
+import {
+  StatTile,
+  type Tone,
+  toneClass,
+} from "~/components/recipient/stat-tile";
 import { TodaysLessons } from "~/components/recipient/todays-lessons";
 import { TopicSuggestionCard } from "~/components/recipient/topic-suggestion-card";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { loadTopicSuggestions } from "~/lib/learning-plan";
 import { loadLearnerDay } from "~/lib/membership";
+import { bestPerLesson } from "~/lib/progress";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+import { cn } from "~/lib/utils";
 
-const choices = [
+const choices: {
+  href: string;
+  icon: typeof IconBook;
+  tone: Tone;
+  title: string;
+  description: string;
+  action: string;
+}[] = [
   {
     href: "/learn",
     icon: IconBook,
+    tone: "teal",
     title: "Read a lesson",
     description:
       "Short, simple lessons about budgeting, bills, scams, and more.",
@@ -28,6 +44,7 @@ const choices = [
   {
     href: "/practice",
     icon: IconTarget,
+    tone: "amber",
     title: "Practice a money choice",
     description: "Try a real-life situation. There is no wrong answer here.",
     action: "Start practicing",
@@ -35,6 +52,7 @@ const choices = [
   {
     href: "/budget",
     icon: IconCalculator,
+    tone: "green",
     title: "Plan a budget",
     description: "Plan your own money, or practice with a made-up example.",
     action: "Open the calculator",
@@ -67,6 +85,9 @@ export default async function RecipientHomePage() {
   const caregiverName = connections[0]
     ? connections[0].partner_full_name || "Your caregiver"
     : null;
+  const lessonsFinished = bestPerLesson(day.completions).length;
+  const doneToday = day.todayLessons.filter((l) => day.done.has(l.id)).length;
+  const practiced = new Set(day.attempts.map((a) => a.scenario_id)).size;
   const planTopics = plan?.topics ?? [];
   const seenTopics = new Set<string>(planTopics);
   const pendingTopics = topicSuggestions.filter((s) => {
@@ -78,10 +99,39 @@ export default async function RecipientHomePage() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome{profile?.full_name ? `, ${profile.full_name}` : ""}
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          Welcome back{profile?.full_name ? `, ${profile.full_name}` : ""}!
         </h1>
-        <p className="text-xl">What would you like to do today?</p>
+        <p className="text-xl text-muted-foreground">
+          What would you like to do today?
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatTile
+          tone="teal"
+          icon={IconBook}
+          value={lessonsFinished}
+          label={lessonsFinished === 1 ? "lesson finished" : "lessons finished"}
+        />
+        <StatTile
+          tone="amber"
+          icon={IconCheck}
+          value={
+            day.todayLessons.length > 0
+              ? `${doneToday} of ${day.todayLessons.length}`
+              : doneToday
+          }
+          label="done today"
+        />
+        <StatTile
+          tone="green"
+          icon={IconTarget}
+          value={practiced}
+          label={
+            practiced === 1 ? "situation practiced" : "situations practiced"
+          }
+        />
       </div>
 
       {pendingTopics.map((s) => (
@@ -103,7 +153,7 @@ export default async function RecipientHomePage() {
           Change my learning plan
         </Link>
       ) : (
-        <Card className="border-2 border-primary/40 bg-primary/5">
+        <Card className="border-primary/30 bg-accent">
           <CardContent className="flex flex-col gap-4">
             <h2 className="text-2xl font-semibold">
               Make your own learning plan
@@ -129,9 +179,14 @@ export default async function RecipientHomePage() {
           const Icon = choice.icon;
           return (
             <Link key={choice.href} href={choice.href} className="group">
-              <Card className="h-full border-2 transition-colors group-hover:border-primary group-hover:bg-accent">
+              <Card className="h-full transition-all group-hover:-translate-y-0.5 group-hover:border-primary/50 group-hover:shadow-lg">
                 <CardContent className="flex h-full flex-col gap-3">
-                  <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <div
+                    className={cn(
+                      "flex size-14 items-center justify-center rounded-2xl",
+                      toneClass(choice.tone),
+                    )}
+                  >
                     <Icon className="size-7" />
                   </div>
                   <h2 className="text-2xl font-semibold">{choice.title}</h2>
