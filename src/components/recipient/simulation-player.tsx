@@ -167,7 +167,7 @@ export function SimulationPlayer({
           >
             <p className="flex items-center gap-2 text-2xl font-bold">
               {choice.safe ? (
-                <IconCheck className="size-7 shrink-0 text-primary" />
+                <IconCheck className="size-7 shrink-0 text-primary-strong" />
               ) : (
                 <IconShieldAlert className="size-7 shrink-0 text-destructive" />
               )}

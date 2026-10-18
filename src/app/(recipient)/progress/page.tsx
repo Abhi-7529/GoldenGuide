@@ -50,7 +50,9 @@ export default async function MyProgressPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card className="border-2">
           <CardContent className="flex flex-col gap-1">
-            <p className="text-5xl font-bold text-primary">{finished.length}</p>
+            <p className="text-5xl font-bold text-primary-strong">
+              {finished.length}
+            </p>
             <p className="text-xl">
               {finished.length === 1 ? "lesson finished" : "lessons finished"}
               {lessons.length > 0 && ` out of ${lessons.length}`}
@@ -59,7 +61,9 @@ export default async function MyProgressPage() {
         </Card>
         <Card className="border-2">
           <CardContent className="flex flex-col gap-1">
-            <p className="text-5xl font-bold text-primary">{practiced}</p>
+            <p className="text-5xl font-bold text-primary-strong">
+              {practiced}
+            </p>
             <p className="text-xl">
               {practiced === 1
                 ? "money situation practiced"
@@ -72,7 +76,7 @@ export default async function MyProgressPage() {
       <Card className="border-2">
         <CardContent className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 text-2xl font-semibold">
-            <IconShieldCheck className="size-7 shrink-0 text-primary" />
+            <IconShieldCheck className="size-7 shrink-0 text-primary-strong" />
             Scam practice
           </h2>
           {scam.completed === 0 ? (
@@ -170,7 +174,7 @@ export default async function MyProgressPage() {
                     canOpenLesson(day, lesson.lesson_id) && (
                       <Link
                         href={`/learn/${lesson.lesson_id}`}
-                        className="w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
+                        className="w-fit text-lg font-medium text-primary-strong underline-offset-4 hover:underline"
                       >
                         Read it again
                       </Link>

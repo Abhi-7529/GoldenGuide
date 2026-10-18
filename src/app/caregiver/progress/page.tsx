@@ -235,7 +235,7 @@ export default async function CaregiverProgressPage() {
                     <p key={sentence}>{sentence}</p>
                   ))}
                   {summary.suggestion && (
-                    <p className="font-medium text-primary">
+                    <p className="font-medium text-primary-strong">
                       {summary.suggestion}
                     </p>
                   )}
@@ -301,7 +301,7 @@ export default async function CaregiverProgressPage() {
                         </div>
                       </dl>
                       {scam.needsWork.length > 0 ? (
-                        <p className="text-sm font-medium text-primary">
+                        <p className="text-sm font-medium text-primary-strong">
                           Needs more practice with{" "}
                           {listChannels(scam.needsWork)}. You might talk through
                           these together.

@@ -163,7 +163,7 @@ export function DailyLessonsPicker({
           {busy ? "Saving..." : "Save today's lessons"}
         </Button>
         {saved && !changed && (
-          <span className="text-sm text-primary">Saved</span>
+          <span className="text-sm text-primary-strong">Saved</span>
         )}
       </div>
     </div>

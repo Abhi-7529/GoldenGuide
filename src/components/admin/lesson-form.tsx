@@ -396,7 +396,9 @@ export function LessonForm({ lesson }: { lesson?: Lesson }) {
               </p>
             )}
             {aiError && <p className="text-sm text-destructive">{aiError}</p>}
-            {aiMessage && <p className="text-sm text-primary">{aiMessage}</p>}
+            {aiMessage && (
+              <p className="text-sm text-primary-strong">{aiMessage}</p>
+            )}
           </CardContent>
         </Card>
       )}

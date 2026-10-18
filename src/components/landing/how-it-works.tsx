@@ -35,7 +35,7 @@ export function HowItWorks() {
               key={s.number}
               className="flex flex-col items-center gap-4 text-center"
             >
-              <div className="relative flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <div className="relative flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
                 <s.icon className="size-7" />
                 <span className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                   {s.number}

@@ -62,7 +62,7 @@ export default async function BudgetPage({
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-3">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
-          <IconCalculator className="size-8 shrink-0 text-primary" />
+          <IconCalculator className="size-8 shrink-0 text-primary-strong" />
           Budget Calculator
         </h1>
         <p className="text-xl">

@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import { AppChrome } from "~/components/app-chrome";
 import { ThemeProvider } from "./theme-provider";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const metadata: Metadata = {
   title: "GoldenGuide",
@@ -17,8 +22,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${poppins.variable}`}
+    >
+      <body>
         <ThemeProvider>
           <AppChrome>{children}</AppChrome>
         </ThemeProvider>

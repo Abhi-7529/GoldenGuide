@@ -48,7 +48,7 @@ export function ProblemSection() {
           {problems.map((p) => (
             <Card key={p.title}>
               <CardHeader>
-                <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
                   <p.icon className="size-5" />
                 </div>
                 <CardTitle>{p.title}</CardTitle>
