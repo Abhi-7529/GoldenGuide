@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   confirmCheckout,
@@ -14,6 +15,8 @@ import { refreshMembership } from "~/lib/stripe";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 import { cn } from "~/lib/utils";
+
+export const metadata: Metadata = { title: "Membership" };
 
 const MESSAGES: Record<string, { text: string; error?: boolean }> = {
   success: {

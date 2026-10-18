@@ -16,7 +16,7 @@ export function CTA() {
           confidence with money.
         </p>
         <Button asChild size="lg">
-          <Link href="#get-started">Get Started</Link>
+          <Link href="/signup">Get Started</Link>
         </Button>
       </div>
     </section>

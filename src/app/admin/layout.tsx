@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { AdminTabs } from "~/components/admin/tabs";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: { template: "%s · Admin · GoldenGuide", default: "Admin" },
+  robots: { index: false },
+};
 
 export default async function AdminLayout({
   children,

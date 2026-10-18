@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BudgetCard } from "~/components/budget/budget-card";
@@ -21,6 +22,8 @@ import {
 } from "~/lib/budget";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Budget Calculator" };
 
 export default async function BudgetPage({
   searchParams,

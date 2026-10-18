@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { IconArrowRight } from "~/components/icons";
@@ -8,6 +9,8 @@ import { topicOfLesson } from "~/lib/learning-plan";
 import { canOpenLesson, loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Lesson" };
 
 // Lessons on these topics end with a link to the Budget Calculator.
 const BUDGET_TOPICS = new Set<string>(["budgeting", "bills", "savings"]);

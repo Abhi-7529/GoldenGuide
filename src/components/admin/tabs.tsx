@@ -11,6 +11,7 @@ const tabs = [
   { href: "/admin/scenarios", label: "Scenarios" },
   { href: "/admin/simulations", label: "Scam Simulations" },
   { href: "/admin/usage", label: "Usage" },
+  { href: "/admin/inquiries", label: "Inquiries" },
 ];
 
 export function AdminTabs() {

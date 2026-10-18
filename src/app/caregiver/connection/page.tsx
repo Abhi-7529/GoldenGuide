@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ConnectionManager } from "~/components/caregiver/connection-manager";
 import { loadMembership } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Manage connection" };
 
 export default async function ManageConnectionPage() {
   const supabase = await createClient();

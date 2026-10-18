@@ -119,6 +119,7 @@ export function ChatPanel({
         className="flex gap-2 border-t border-border pt-4"
       >
         <Input
+          maxLength={2000}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           placeholder="Type a message..."

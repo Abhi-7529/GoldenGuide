@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Button } from "~/components/ui/button";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Account" };
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -18,7 +23,7 @@ export default async function AccountPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-lg border border-border p-6">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-card">
         <div className="flex flex-col gap-1">
           <span className="text-sm text-muted-foreground">Email</span>
           <span className="font-medium">{data.user.email}</span>
@@ -29,6 +34,19 @@ export default async function AccountPage() {
             {new Date(data.user.created_at).toLocaleDateString()}
           </span>
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <Button asChild size="lg" variant="outline">
+          <Link href="/reset-password">Change my password</Link>
+        </Button>
+        <p className="text-center text-sm text-muted-foreground">
+          Want to delete your account?{" "}
+          <Link href="/contact" className="underline underline-offset-4">
+            Contact us
+          </Link>{" "}
+          and we&apos;ll remove it and everything in it.
+        </p>
       </div>
     </main>
   );

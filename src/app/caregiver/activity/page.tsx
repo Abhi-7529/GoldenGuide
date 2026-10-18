@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { Card, CardContent } from "~/components/ui/card";
 import { formatDay, loadProgress } from "~/lib/progress";
 import { loadSimulationAttempts } from "~/lib/simulations";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Activity" };
 
 const DAYS_SHOWN = 30;
 

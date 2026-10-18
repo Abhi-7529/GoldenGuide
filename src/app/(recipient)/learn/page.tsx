@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TodaysLessons } from "~/components/recipient/todays-lessons";
 import { loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Lessons" };
 
 // Learners only see the lessons they can do: their caregiver's choices, or
 // today's lessons from their own plan when learning alone.

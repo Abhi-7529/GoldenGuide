@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DailyLessonsPicker } from "~/components/caregiver/daily-lessons-picker";
@@ -32,6 +33,8 @@ import {
 import { loadSuggestions } from "~/lib/suggestions";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Learning Progress" };
 
 export default async function CaregiverProgressPage() {
   const supabase = await createClient();

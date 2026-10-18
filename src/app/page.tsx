@@ -6,6 +6,7 @@ import { Features } from "~/components/landing/features";
 import { Hero } from "~/components/landing/hero";
 import { HowItWorks } from "~/components/landing/how-it-works";
 import { InteractiveDemo } from "~/components/landing/interactive-demo";
+import { Pricing } from "~/components/landing/pricing";
 import { ProblemSection } from "~/components/landing/problem-section";
 import { TrustSection } from "~/components/landing/trust-section";
 import { Reveal } from "~/components/reveal";
@@ -37,6 +38,9 @@ export default async function Home() {
       </Reveal>
       <Reveal>
         <Features />
+      </Reveal>
+      <Reveal>
+        <Pricing />
       </Reveal>
       <Reveal>
         <AboutSection />

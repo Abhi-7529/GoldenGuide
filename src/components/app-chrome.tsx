@@ -7,12 +7,15 @@ import { Navbar } from "~/components/navbar";
 export function AppChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isMarketing = pathname === "/";
+  const isPublic =
+    isMarketing ||
+    ["/organizations", "/contact", "/privacy", "/terms"].includes(pathname);
 
   return (
     <>
       <Navbar variant={isMarketing ? "marketing" : "app"} />
       {children}
-      {isMarketing && <Footer />}
+      {isPublic && <Footer />}
     </>
   );
 }

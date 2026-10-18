@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { StatCard } from "~/components/admin/stat-card";
 import { Card, CardContent } from "~/components/ui/card";
 import { createClient } from "~/lib/supabase/server";
 import type { AdminOverview } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Overview" };
 
 const shortcuts = [
   {
@@ -24,6 +27,11 @@ const shortcuts = [
     href: "/admin/usage",
     title: "Usage statistics",
     body: "Sign-ups, activity, messages, and the most-used content.",
+  },
+  {
+    href: "/admin/inquiries",
+    title: "Inquiries",
+    body: "Messages sent from the Contact and Organizations pages.",
   },
 ];
 

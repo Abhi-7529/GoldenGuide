@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { IconArrowRight, IconCheck, IconShieldCheck } from "~/components/icons";
@@ -13,6 +14,8 @@ import {
   unlockedLevels,
 } from "~/lib/simulations";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "My Progress" };
 
 export default async function MyProgressPage() {
   const supabase = await createClient();

@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ScenarioPlayer } from "~/components/recipient/scenario-player";
 import { loadLearnerDay } from "~/lib/membership";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Practice" };
 
 export default async function PracticePage() {
   const supabase = await createClient();
