@@ -76,7 +76,7 @@ export default async function ScamPracticePage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
-          <IconShieldCheck className="size-8 shrink-0 text-primary" />
+          <IconShieldCheck className="size-8 shrink-0 text-primary-strong" />
           Scam Practice
         </h1>
         <p className="text-xl">
@@ -95,7 +95,7 @@ export default async function ScamPracticePage({
       <div className="grid gap-4 sm:grid-cols-3">
         <Card className="border-2">
           <CardContent className="flex flex-col gap-1">
-            <p className="text-5xl font-bold text-primary">
+            <p className="text-5xl font-bold text-primary-strong">
               {summary.completed}
             </p>
             <p className="text-xl">
@@ -105,7 +105,7 @@ export default async function ScamPracticePage({
         </Card>
         <Card className="border-2">
           <CardContent className="flex flex-col gap-1">
-            <p className="text-5xl font-bold text-primary">
+            <p className="text-5xl font-bold text-primary-strong">
               {summary.accuracy === null
                 ? "—"
                 : `${Math.round(summary.accuracy * 100)}%`}
@@ -115,7 +115,7 @@ export default async function ScamPracticePage({
         </Card>
         <Card className="border-2">
           <CardContent className="flex flex-col gap-1">
-            <p className="text-3xl font-bold text-primary">
+            <p className="text-3xl font-bold text-primary-strong">
               {levelLabel(highest)}
             </p>
             <p className="text-xl">your highest level</p>
@@ -188,7 +188,7 @@ export default async function ScamPracticePage({
         {forLessons.length > 0 && !showLessons && (
           <Link
             href={`/scam-practice${fromLesson ? `?lesson=${fromLesson.id}` : ""}`}
-            className="w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
+            className="w-fit text-lg font-medium text-primary-strong underline-offset-4 hover:underline"
           >
             Practice that goes with your lessons
           </Link>

@@ -76,7 +76,7 @@ export function ConnectionManager({
               Your code won't connect anyone new.{" "}
               <Link
                 href="/caregiver/membership"
-                className="font-medium text-primary underline-offset-4 hover:underline"
+                className="font-medium text-primary-strong underline-offset-4 hover:underline"
               >
                 Upgrade to Family to connect up to 3 people.
               </Link>

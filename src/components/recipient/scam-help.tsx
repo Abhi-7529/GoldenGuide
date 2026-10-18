@@ -217,7 +217,7 @@ export function ScamHelp({
                     )}
                   >
                     {situation === option && (
-                      <IconCheck className="size-5 shrink-0 text-primary" />
+                      <IconCheck className="size-5 shrink-0 text-primary-strong" />
                     )}
                     {option}
                   </button>
@@ -244,7 +244,7 @@ export function ScamHelp({
         Want to get better at spotting scams?{" "}
         <Link
           href="/scam-practice"
-          className="font-medium text-primary underline-offset-4 hover:underline"
+          className="font-medium text-primary-strong underline-offset-4 hover:underline"
         >
           Try a safe, pretend scam in Scam Practice
         </Link>

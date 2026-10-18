@@ -62,7 +62,7 @@ export function Features() {
           {features.map((f) => (
             <Card key={f.title}>
               <CardHeader>
-                <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="mb-2 flex size-11 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
                   <f.icon className="size-5" />
                 </div>
                 <CardTitle>{f.title}</CardTitle>

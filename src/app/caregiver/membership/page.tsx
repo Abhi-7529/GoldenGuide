@@ -164,7 +164,7 @@ export default async function MembershipPage({
                 <ul className="flex flex-col gap-2 text-sm">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex gap-2">
-                      <IconCheck className="size-4 shrink-0 text-primary" />
+                      <IconCheck className="size-4 shrink-0 text-primary-strong" />
                       {feature}
                     </li>
                   ))}

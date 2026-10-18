@@ -148,7 +148,7 @@ export default async function RecipientHomePage() {
       {plan ? (
         <Link
           href="/plan"
-          className="-mt-4 w-fit text-lg font-medium text-primary underline-offset-4 hover:underline"
+          className="-mt-4 w-fit text-lg font-medium text-primary-strong underline-offset-4 hover:underline"
         >
           Change my learning plan
         </Link>
@@ -191,7 +191,7 @@ export default async function RecipientHomePage() {
                   </div>
                   <h2 className="text-2xl font-semibold">{choice.title}</h2>
                   <p className="text-lg">{choice.description}</p>
-                  <span className="mt-auto flex items-center gap-2 pt-2 text-lg font-semibold text-primary">
+                  <span className="mt-auto flex items-center gap-2 pt-2 text-lg font-semibold text-primary-strong">
                     {choice.action}
                     <IconArrowRight className="size-5" />
                   </span>

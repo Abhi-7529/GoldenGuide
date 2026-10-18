@@ -197,7 +197,7 @@ export default function OnboardingPage() {
                 "disabled:pointer-events-none disabled:opacity-50",
               )}
             >
-              <IconUser className="size-6 text-primary" />
+              <IconUser className="size-6 text-primary-strong" />
               <span className="font-semibold">I'm learning for myself</span>
               <span className="text-sm text-muted-foreground">
                 Take lessons and practice financial decisions.
@@ -213,7 +213,7 @@ export default function OnboardingPage() {
                 "disabled:pointer-events-none disabled:opacity-50",
               )}
             >
-              <IconUsers className="size-6 text-primary" />
+              <IconUsers className="size-6 text-primary-strong" />
               <span className="font-semibold">I'm a caregiver</span>
               <span className="text-sm text-muted-foreground">
                 Support a family member's progress.

@@ -5,7 +5,7 @@ export function TrustSection() {
     <section id="safety" className="px-6 py-20">
       <div className="mx-auto max-w-3xl">
         <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card p-8 text-center shadow-sm sm:p-10">
-          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
             <IconShieldCheck className="size-7" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">

@@ -22,6 +22,8 @@
   --color-input: var(--input);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  /* Gold dark enough to read as text on light surfaces */
+  --color-primary-strong: var(--primary-strong);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
@@ -61,6 +63,7 @@
   --input: oklch(0.88 0.012 85);
   --primary: oklch(0.72 0.13 78);
   --primary-foreground: oklch(0.22 0.03 75);
+  --primary-strong: oklch(0.5 0.1 70);
   --secondary: oklch(0.955 0.01 85);
   --secondary-foreground: oklch(0.2 0.02 255);
   --accent: oklch(0.955 0.04 85);
@@ -122,6 +125,7 @@
   --input: oklch(0.42 0.015 250);
   --primary: oklch(0.78 0.14 78);
   --primary-foreground: oklch(0.18 0.02 75);
+  --primary-strong: oklch(0.8 0.13 80);
   --secondary: oklch(0.27 0.015 250);
   --secondary-foreground: oklch(0.97 0.005 250);
   --accent: oklch(0.3 0.04 78);

@@ -31,7 +31,7 @@ export default async function LearnPage() {
           Each lesson is short and goes one step at a time.{" "}
           <Link
             href="/plan"
-            className="font-medium text-primary underline-offset-4 hover:underline"
+            className="font-medium text-primary-strong underline-offset-4 hover:underline"
           >
             {day.plan ? "Change my plan" : "Make my plan"}
           </Link>

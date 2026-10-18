@@ -183,7 +183,7 @@ export function LessonContent({
     <div className="flex flex-col gap-6">
       <Link
         href={exitHref}
-        className="flex w-fit items-center gap-2 text-lg font-medium text-primary underline-offset-4 hover:underline"
+        className="flex w-fit items-center gap-2 text-lg font-medium text-primary-strong underline-offset-4 hover:underline"
       >
         <IconArrowLeft className="size-5" />
         {exitLabel}
@@ -271,7 +271,7 @@ export function LessonContent({
           <ul className="flex flex-col gap-4">
             {lesson.key_takeaways.map((takeaway) => (
               <li key={takeaway} className="flex gap-3 text-xl leading-relaxed">
-                <IconCheck className="mt-1 size-6 shrink-0 text-primary" />
+                <IconCheck className="mt-1 size-6 shrink-0 text-primary-strong" />
                 <span>{takeaway}</span>
               </li>
             ))}
