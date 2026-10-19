@@ -17,10 +17,11 @@ export default function TermsPage() {
       <Prose>
         <p>
           These terms explain the rules for using GoldenGuide. GoldenGuide is
-          operated by its founder, who is based in Texas, United States
-          (&quot;GoldenGuide&quot;, &quot;we&quot; or &quot;us&quot;). By
-          creating an account or using GoldenGuide, you agree to these terms and
-          to our <Link href="/privacy">Privacy Policy</Link>.
+          operated by its founder, Abhiram Bongarala, who is based in Texas,
+          United States (&quot;GoldenGuide&quot;, &quot;we&quot; or
+          &quot;us&quot;). By creating an account or using GoldenGuide, you
+          agree to these terms and to our{" "}
+          <Link href="/privacy">Privacy Policy</Link>.
         </p>
 
         <h2>Education, not financial advice</h2>

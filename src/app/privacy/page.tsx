@@ -25,10 +25,11 @@ export default function PrivacyPage() {
 
         <h2>Who we are</h2>
         <p>
-          GoldenGuide is operated by its founder, who is based in Texas, United
-          States. When this policy says &quot;GoldenGuide&quot;, &quot;we&quot;
-          or &quot;us&quot;, it means the operator of GoldenGuide. To reach us
-          about privacy, <LegalContact />.
+          GoldenGuide is operated by its founder, Abhiram Bongarala, who is
+          based in Texas, United States. When this policy says
+          &quot;GoldenGuide&quot;, &quot;we&quot; or &quot;us&quot;, it means
+          Abhiram Bongarala as the operator of GoldenGuide. To reach us about
+          privacy, <LegalContact />.
         </p>
 
         <h2>Where GoldenGuide is available</h2>
