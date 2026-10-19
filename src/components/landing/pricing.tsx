@@ -40,6 +40,11 @@ export function Pricing() {
                       {period}
                     </span>
                   </p>
+                  {id === "family" && (
+                    <p className="text-sm text-muted-foreground">
+                      Plus sales tax where it applies
+                    </p>
+                  )}
                 </div>
                 <ul className="flex flex-col gap-2.5">
                   {plan.features.map((feature) => (

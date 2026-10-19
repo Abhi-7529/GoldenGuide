@@ -54,9 +54,12 @@ export default function TermsPage() {
             are included.
           </li>
           <li>
-            <strong>GoldenGuide Family ($7.99 a month):</strong> a caregiver can
-            connect with up to 3 learners, with unlimited lessons. Only
-            caregivers can buy a membership.
+            <strong>
+              GoldenGuide Family ($7.99 a month, plus sales tax where it
+              applies):
+            </strong>{" "}
+            a caregiver can connect with up to 3 learners, with unlimited
+            lessons. Only caregivers can buy a membership.
           </li>
           <li>
             Family renews every month until you cancel. You can cancel at any

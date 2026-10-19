@@ -30,11 +30,13 @@ const MESSAGES: Record<string, { text: string; error?: boolean }> = {
   },
 };
 
+// UTC, matching the dates Stripe shows in receipts and the billing portal.
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -126,7 +128,7 @@ export default async function MembershipPage({
               <p className="text-sm">
                 {membership.cancel_at_period_end
                   ? `Your membership ends on ${formatDate(membership.current_period_end)}. After that you'll be on the Free plan.`
-                  : `Renews on ${formatDate(membership.current_period_end)} for ${PLANS.family.price} a month.`}
+                  : `Renews on ${formatDate(membership.current_period_end)} for ${PLANS.family.price} a month, plus sales tax where it applies.`}
               </p>
               <div className="flex flex-wrap items-start gap-3">
                 <MembershipActions
@@ -164,6 +166,11 @@ export default async function MembershipPage({
                 <p>
                   <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground"> / month</span>
+                  {id === "family" && (
+                    <span className="block text-sm text-muted-foreground">
+                      Plus sales tax where it applies
+                    </span>
+                  )}
                 </p>
                 <ul className="flex flex-col gap-2 text-sm">
                   {plan.features.map((feature) => (
