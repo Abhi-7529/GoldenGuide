@@ -219,7 +219,7 @@ export default async function MembershipPage({
       </div>
 
       {/* Only shown with Stripe test keys; real customers never see it. */}
-      {env.STRIPE_SECRET_KEY.startsWith("sk_test_") && (
+      {/_test_/.test(env.STRIPE_SECRET_KEY) && (
         <p className="text-xs text-muted-foreground">
           Payments are in Stripe test mode. Use card 4242 4242 4242 4242 with
           any future date and any CVC.

@@ -10,7 +10,9 @@ export const env = createEnv({
     AI_GATEWAY_API_KEY: z.string().min(1),
     // Writes verified Stripe subscription data. Never expose to the browser.
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-    STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
+    // A full secret key (sk_) or a restricted key (rk_), which Stripe now
+    // issues for keys without payout and transfer access.
+    STRIPE_SECRET_KEY: z.string().regex(/^(sk|rk)_/),
     // Optional locally; required for the Stripe webhook endpoint.
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
     // Vercel sends this with its scheduled (cron) requests. Use a long
