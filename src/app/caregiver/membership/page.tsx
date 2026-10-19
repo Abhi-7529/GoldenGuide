@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   confirmCheckout,
@@ -9,11 +10,14 @@ import { IconCheck } from "~/components/icons";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { env } from "~/env";
 import { loadMembership, PLANS, type PlanId } from "~/lib/membership";
 import { refreshMembership } from "~/lib/stripe";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 import { cn } from "~/lib/utils";
+
+export const metadata: Metadata = { title: "Membership" };
 
 const MESSAGES: Record<string, { text: string; error?: boolean }> = {
   success: {
@@ -26,11 +30,13 @@ const MESSAGES: Record<string, { text: string; error?: boolean }> = {
   },
 };
 
+// UTC, matching the dates Stripe shows in receipts and the billing portal.
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 
@@ -122,7 +128,7 @@ export default async function MembershipPage({
               <p className="text-sm">
                 {membership.cancel_at_period_end
                   ? `Your membership ends on ${formatDate(membership.current_period_end)}. After that you'll be on the Free plan.`
-                  : `Renews on ${formatDate(membership.current_period_end)} for ${PLANS.family.price} a month.`}
+                  : `Renews on ${formatDate(membership.current_period_end)} for ${PLANS.family.price} a month, plus sales tax where it applies.`}
               </p>
               <div className="flex flex-wrap items-start gap-3">
                 <MembershipActions
@@ -160,6 +166,11 @@ export default async function MembershipPage({
                 <p>
                   <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground"> / month</span>
+                  {id === "family" && (
+                    <span className="block text-sm text-muted-foreground">
+                      Plus sales tax where it applies
+                    </span>
+                  )}
                 </p>
                 <ul className="flex flex-col gap-2 text-sm">
                   {plan.features.map((feature) => (
@@ -182,10 +193,13 @@ export default async function MembershipPage({
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Payments are in Stripe test mode. Use card 4242 4242 4242 4242 with any
-        future date and any CVC.
-      </p>
+      {/* Only shown with Stripe test keys; real customers never see it. */}
+      {env.STRIPE_SECRET_KEY.startsWith("sk_test_") && (
+        <p className="text-xs text-muted-foreground">
+          Payments are in Stripe test mode. Use card 4242 4242 4242 4242 with
+          any future date and any CVC.
+        </p>
+      )}
     </div>
   );
 }

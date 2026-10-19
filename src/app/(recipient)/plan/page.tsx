@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { EditLearningPlan } from "~/components/recipient/edit-learning-plan";
 import { loadPlans } from "~/lib/learning-plan";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "My learning plan" };
 
 export default async function LearningPlanPage() {
   const supabase = await createClient();

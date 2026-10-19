@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { IconX } from "~/components/icons";
 import { ChatPanel } from "~/components/messages/chat-panel";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "Messages" };
 
 export default async function MessagesPage({
   params,

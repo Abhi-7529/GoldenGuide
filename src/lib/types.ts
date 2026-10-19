@@ -196,3 +196,15 @@ export type PracticeBudget = {
   created_at: string;
   updated_at: string;
 };
+
+export type ContactInquiry = {
+  id: string;
+  kind: "organization" | "general";
+  name: string;
+  email: string;
+  organization: string;
+  organization_type: string;
+  message: string;
+  status: "new" | "handled";
+  created_at: string;
+};

@@ -20,8 +20,8 @@ const links = [
   { href: "#how-it-works", label: "How It Works" },
   { href: "#features", label: "Features" },
   { href: "#for-caregivers", label: "For Caregivers" },
-  { href: "#about", label: "About" },
-  { href: "#safety", label: "Safety" },
+  { href: "#pricing", label: "Pricing" },
+  { href: "/organizations", label: "Organizations" },
 ];
 
 export function Navbar({
@@ -96,7 +96,7 @@ export function Navbar({
         </Link>
 
         {variant === "marketing" && (
-          <div className="hidden items-center gap-8 md:flex">
+          <div className="hidden items-center gap-6 lg:gap-8 md:flex">
             {links.map((link) => (
               <Link
                 key={link.href}

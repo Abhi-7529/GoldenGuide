@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { BudgetEditor } from "~/components/budget/budget-editor";
 import {
@@ -8,6 +9,8 @@ import {
 } from "~/lib/budget";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Budget" };
 
 export default async function BudgetDetailPage({
   params,

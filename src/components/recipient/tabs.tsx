@@ -99,6 +99,9 @@ export function RecipientTabs({
   connectionId: string | null;
 }) {
   const pathname = usePathname();
+  // Inside a lesson or a budget, phones show only that page (it has its own
+  // Back link), so the content isn't pushed below the screen.
+  if (/^\/(learn|budget)\/[^/]+/.test(pathname)) return null;
 
   return (
     <nav aria-label="Main" className="flex flex-col gap-3 md:hidden">

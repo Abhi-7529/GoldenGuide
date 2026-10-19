@@ -1,8 +1,11 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LessonContent } from "~/components/recipient/lesson-content";
 import { Badge } from "~/components/ui/badge";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Lesson preview" };
 
 export default async function PreviewLessonPage({
   params,

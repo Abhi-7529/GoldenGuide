@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { AdminTabs } from "~/components/admin/tabs";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = {
+  title: { template: "%s · Admin · GoldenGuide", default: "Admin" },
+  robots: { index: false },
+};
 
 export default async function AdminLayout({
   children,
@@ -21,7 +27,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col gap-6 px-6 py-10">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Admin</h1>
         <p className="text-sm text-muted-foreground">
@@ -30,6 +36,6 @@ export default async function AdminLayout({
       </div>
       <AdminTabs />
       {children}
-    </div>
+    </main>
   );
 }

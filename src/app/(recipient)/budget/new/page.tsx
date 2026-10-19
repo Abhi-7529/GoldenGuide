@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BudgetSetup } from "~/components/budget/budget-setup";
 import { IconArrowLeft } from "~/components/icons";
 import { TEMPLATES } from "~/lib/budget";
 import { createClient } from "~/lib/supabase/server";
+
+export const metadata: Metadata = { title: "New budget" };
 
 export default async function NewBudgetPage({
   searchParams,

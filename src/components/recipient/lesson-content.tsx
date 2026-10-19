@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IconArrowLeft,
   IconArrowRight,
@@ -120,6 +120,26 @@ function speechFor(step: Step, lesson: Lesson, finish: FinishMessage) {
   }
 }
 
+// Messages our database rules send back are written for learners; anything
+// else (like a dropped connection) gets a plain fallback.
+const FRIENDLY_SAVE_ERRORS = [
+  "isn't one of today's lessons",
+  "finished today's lessons",
+  "hasn't been assigned to you",
+];
+
+function saveErrorMessage(message: string) {
+  return FRIENDLY_SAVE_ERRORS.some((m) => message.includes(m))
+    ? message
+    : "We couldn't save this lesson to My Progress. Please check your internet connection and try again.";
+}
+
+type SaveState =
+  | { kind: "idle" }
+  | { kind: "saving" }
+  | { kind: "saved" }
+  | { kind: "error"; message: string };
+
 /**
  * A lesson as learners see it, one step at a time with large Back and Next
  * buttons. Shared by the learner page and the admin preview. When
@@ -145,15 +165,50 @@ export function LessonContent({
   const steps = buildSteps(lesson);
   const [stepIndex, setStepIndex] = useState(0);
   const [score, setScore] = useState<number | null>(null);
+  const [save, setSave] = useState<SaveState>({ kind: "idle" });
+  const [resumed, setResumed] = useState(false);
+  // Where the learner stopped, kept on this device so they can pick up again.
+  const resumeKey = progressUserId
+    ? `goldenguide:lesson-step:${progressUserId}:${lesson.id}`
+    : null;
 
   const step = steps[stepIndex] ?? steps[0];
   // The final "done" screen isn't counted as a step.
   const totalSteps = steps.length - 1;
   const isDone = step.kind === "done";
   const finish = finishMessage(score, lesson.practice_questions.length);
+  const lastStep = steps.length - 1;
+
+  useEffect(() => {
+    if (!resumeKey) return;
+    try {
+      const saved = Number(window.localStorage.getItem(resumeKey));
+      if (saved > 0 && saved < lastStep) {
+        setStepIndex(saved);
+        setResumed(true);
+      }
+    } catch {
+      // Storage can be blocked (private browsing); start from the beginning.
+    }
+  }, [resumeKey, lastStep]);
+
+  function rememberStep(index: number) {
+    if (!resumeKey) return;
+    try {
+      if (index > 0 && index < lastStep) {
+        window.localStorage.setItem(resumeKey, String(index));
+      } else {
+        window.localStorage.removeItem(resumeKey);
+      }
+    } catch {
+      // Not being able to remember the step is fine.
+    }
+  }
 
   function goTo(index: number) {
     setStepIndex(index);
+    setResumed(false);
+    rememberStep(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (steps[index]?.kind === "done") {
       void recordCompletion(score ?? 0);
@@ -162,14 +217,19 @@ export function LessonContent({
 
   async function recordCompletion(correctCount: number) {
     if (!progressUserId) return;
+    setSave({ kind: "saving" });
     const supabase = createClient();
-    // Saving progress is best-effort; the learner still sees "Well done!".
-    await supabase.from("lesson_completions").insert({
+    const { error } = await supabase.from("lesson_completions").insert({
       user_id: progressUserId,
       lesson_id: lesson.id,
       correct_count: correctCount,
       question_count: lesson.practice_questions.length,
     });
+    setSave(
+      error
+        ? { kind: "error", message: saveErrorMessage(error.message) }
+        : { kind: "saved" },
+    );
   }
 
   const nextLabel =
@@ -207,6 +267,25 @@ export function LessonContent({
               style={{ width: `${((stepIndex + 1) / totalSteps) * 100}%` }}
             />
           </div>
+        </div>
+      )}
+
+      {resumed && (
+        <div
+          role="status"
+          className="flex flex-col gap-3 rounded-2xl border border-primary/30 bg-accent p-5 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <p className="text-xl">
+            Welcome back! We opened this lesson where you stopped.
+          </p>
+          <Button
+            size="lg"
+            variant="outline"
+            className="w-full shrink-0 sm:w-fit"
+            onClick={() => goTo(0)}
+          >
+            Start from the beginning
+          </Button>
         </div>
       )}
 
@@ -285,6 +364,7 @@ export function LessonContent({
           onFinish={(correct) => {
             setScore(correct);
             setStepIndex(stepIndex + 1);
+            rememberStep(stepIndex + 1);
             window.scrollTo({ top: 0, behavior: "smooth" });
             void recordCompletion(correct);
           }}
@@ -305,6 +385,35 @@ export function LessonContent({
           </h2>
           <p className="text-xl">You finished “{lesson.title}”.</p>
           {finish.message && <p className="text-xl">{finish.message}</p>}
+          {save.kind === "saving" && (
+            <p role="status" className="text-lg text-muted-foreground">
+              Saving to My Progress…
+            </p>
+          )}
+          {save.kind === "saved" && (
+            <p
+              role="status"
+              className="flex items-center gap-2 text-lg font-medium text-primary-strong"
+            >
+              <IconCheck className="size-5" />
+              Saved to My Progress
+            </p>
+          )}
+          {save.kind === "error" && (
+            <div
+              role="alert"
+              className="flex w-full flex-col items-center gap-3 rounded-xl border-2 border-destructive/40 bg-card p-4"
+            >
+              <p className="text-lg">{save.message}</p>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => void recordCompletion(score ?? 0)}
+              >
+                Try again
+              </Button>
+            </div>
+          )}
           <div
             className={cn(
               "flex w-full flex-col gap-3 sm:w-auto sm:flex-row",
@@ -323,6 +432,7 @@ export function LessonContent({
               variant={finish.suggestReread ? "default" : "outline"}
               onClick={() => {
                 setScore(null);
+                setSave({ kind: "idle" });
                 goTo(0);
               }}
             >

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BudgetBreakdown } from "~/components/budget/budget-breakdown";
@@ -20,6 +21,8 @@ import { formatDay, loadProgress } from "~/lib/progress";
 import { loadSuggestions } from "~/lib/suggestions";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Budgets" };
 
 export default async function CaregiverBudgetsPage() {
   const supabase = await createClient();

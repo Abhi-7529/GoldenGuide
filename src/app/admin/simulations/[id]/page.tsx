@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SimulationForm } from "~/components/admin/simulation-form";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson, ScamSimulation } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Edit scam simulation" };
 
 export default async function EditSimulationPage({
   params,

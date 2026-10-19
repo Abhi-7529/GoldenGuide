@@ -2,14 +2,12 @@ import Link from "next/link";
 import { Logo } from "~/components/logo";
 
 const links = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#features", label: "Features" },
-  { href: "#for-caregivers", label: "For Caregivers" },
-  { href: "#about", label: "About" },
-  { href: "#safety", label: "Safety" },
-  { href: "#", label: "Contact" },
-  { href: "#", label: "Privacy" },
-  { href: "#", label: "Terms" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/#for-caregivers", label: "For Caregivers" },
+  { href: "/organizations", label: "For Organizations" },
+  { href: "/contact", label: "Contact" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
 ];
 
 export function Footer() {
@@ -32,6 +30,10 @@ export function Footer() {
           ))}
         </nav>
       </div>
+      <p className="mx-auto mt-6 max-w-6xl text-center text-sm text-muted-foreground sm:text-left">
+        © {new Date().getFullYear()} GoldenGuide. Financial education, not
+        financial advice.
+      </p>
     </footer>
   );
 }

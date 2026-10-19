@@ -16,7 +16,7 @@ export function Hero() {
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Button asChild size="lg">
-              <Link href="#get-started">Get Started</Link>
+              <Link href="/signup">Get Started</Link>
             </Button>
             <Button asChild size="lg" variant="outline">
               <Link href="#how-it-works">See How It Works</Link>
@@ -39,7 +39,7 @@ export function Hero() {
                 Not started yet
               </span>
               <Button asChild size="sm">
-                <Link href="#get-started">Start Free Lesson</Link>
+                <Link href="/signup">Start Free Lesson</Link>
               </Button>
             </div>
 

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -23,6 +24,8 @@ import { bestPerLesson } from "~/lib/progress";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 import { cn } from "~/lib/utils";
+
+export const metadata: Metadata = { title: "Home" };
 
 const choices: {
   href: string;

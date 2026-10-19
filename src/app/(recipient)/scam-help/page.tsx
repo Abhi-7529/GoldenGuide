@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { ScamHelp } from "~/components/recipient/scam-help";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Is this a scam?" };
 
 export default async function ScamHelpPage() {
   const supabase = await createClient();

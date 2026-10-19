@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { IconCheck, IconShieldCheck } from "~/components/icons";
@@ -18,6 +19,8 @@ import {
 import { createClient } from "~/lib/supabase/server";
 import type { LessonLevel } from "~/lib/types";
 import { cn } from "~/lib/utils";
+
+export const metadata: Metadata = { title: "Scam Practice" };
 
 export default async function ScamPracticePage({
   searchParams,

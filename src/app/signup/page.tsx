@@ -24,7 +24,12 @@ export default function SignupPage() {
     setLoading(true);
 
     const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      // The confirmation email brings people back here to finish signing up.
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+    });
 
     setLoading(false);
 
@@ -79,20 +84,46 @@ export default function SignupPage() {
             id="password"
             type="password"
             autoComplete="new-password"
-            minLength={6}
+            minLength={8}
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <p className="text-sm text-muted-foreground">
+            At least 8 characters.
+          </p>
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        {message && <p className="text-sm text-muted-foreground">{message}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+        {message && (
+          <p
+            role="status"
+            className="rounded-xl border border-primary/30 bg-accent p-3 text-base"
+          >
+            {message}
+          </p>
+        )}
 
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" size="lg" disabled={loading}>
           {loading ? "Creating account..." : "Create Account"}
         </Button>
       </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        By creating an account, you agree to our{" "}
+        <Link href="/terms" className="underline underline-offset-4">
+          Terms
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="underline underline-offset-4">
+          Privacy Policy
+        </Link>
+        .
+      </p>
 
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
