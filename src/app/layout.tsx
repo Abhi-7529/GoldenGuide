@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import { AppChrome } from "~/components/app-chrome";
 import { env } from "~/env";
+import { PREFERENCES_BOOT_SCRIPT } from "~/lib/preferences";
 import { ThemeProvider } from "./theme-provider";
 import "./globals.css";
 
@@ -48,6 +49,13 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${poppins.variable}`}
     >
+      <head>
+        {/* Saved text size and contrast, applied before the first paint. */}
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: a fixed string from our own code
+          dangerouslySetInnerHTML={{ __html: PREFERENCES_BOOT_SCRIPT }}
+        />
+      </head>
       <body>
         <ThemeProvider>
           <AppChrome>{children}</AppChrome>

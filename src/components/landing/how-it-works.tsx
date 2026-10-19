@@ -1,51 +1,60 @@
-import { IconBook, IconTarget, IconTrendingUp } from "~/components/icons";
+import { IconBook, IconTarget, IconUser } from "~/components/icons";
 
 const steps = [
   {
-    number: "1",
+    icon: IconUser,
+    title: "Personalize your learning",
+    body: "Choose the money topics and goals that matter to you. GoldenGuide suggests lessons that fit.",
+  },
+  {
     icon: IconBook,
-    title: "Learn",
-    body: "Understand financial topics through simple explanations.",
+    title: "Learn at your own pace",
+    body: "Short, easy-to-understand lessons about everyday money decisions, one small step at a time.",
   },
   {
-    number: "2",
     icon: IconTarget,
-    title: "Practice",
-    body: "Use realistic scenarios to practice making financial decisions.",
-  },
-  {
-    number: "3",
-    icon: IconTrendingUp,
-    title: "Build Confidence",
-    body: "Apply what you learn to everyday financial situations.",
+    title: "Practice with confidence",
+    body: "Try what you learned with realistic situations, budgeting activities and pretend scams that are completely safe.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="px-6 py-20">
-      <div className="mx-auto max-w-5xl">
-        <h2 className="text-center text-2xl font-bold tracking-tight sm:text-3xl">
-          How GoldenGuide Works
-        </h2>
+    <section id="how-it-works" className="scroll-mt-20 px-6 py-20 sm:py-24">
+      <div className="mx-auto flex max-w-6xl flex-col gap-14">
+        <div className="mx-auto flex max-w-2xl flex-col gap-3 text-center">
+          <p className="text-sm font-semibold tracking-widest text-primary-strong uppercase">
+            How GoldenGuide works
+          </p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Three simple steps to feeling sure about money
+          </h2>
+        </div>
 
-        <div className="mt-12 grid gap-10 sm:grid-cols-3">
-          {steps.map((s) => (
-            <div
-              key={s.number}
-              className="flex flex-col items-center gap-4 text-center"
+        <ol className="relative grid gap-10 md:grid-cols-3 md:gap-8">
+          {/* The line that connects the steps on wider screens */}
+          <div
+            aria-hidden="true"
+            className="absolute top-8 right-[16%] left-[16%] hidden border-t-2 border-dashed border-primary/40 md:block"
+          />
+          {steps.map((step, index) => (
+            <li
+              key={step.title}
+              className="relative flex flex-col items-center gap-4 text-center"
             >
-              <div className="relative flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary-strong">
-                <s.icon className="size-7" />
-                <span className="absolute -top-2 -right-2 flex size-7 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                  {s.number}
+              <div className="relative flex size-16 items-center justify-center rounded-2xl bg-card text-primary-strong shadow-card ring-1 ring-border">
+                <step.icon className="size-8" />
+                <span className="absolute -top-2.5 -right-2.5 flex size-7 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+                  {index + 1}
                 </span>
               </div>
-              <h3 className="text-lg font-semibold">{s.title}</h3>
-              <p className="max-w-xs text-muted-foreground">{s.body}</p>
-            </div>
+              <h3 className="text-xl font-semibold">{step.title}</h3>
+              <p className="max-w-xs text-lg text-muted-foreground">
+                {step.body}
+              </p>
+            </li>
           ))}
-        </div>
+        </ol>
       </div>
     </section>
   );

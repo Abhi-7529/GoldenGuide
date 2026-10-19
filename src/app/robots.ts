@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: "*",
-      allow: ["/", "/organizations", "/contact", "/privacy", "/terms"],
+      allow: ["/", "/organizations", "/contact", "/help", "/privacy", "/terms"],
       // Signed-in areas are private and not useful in search results.
       disallow: [
         "/admin",
@@ -14,6 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         "/caregiver",
         "/messages",
         "/account",
+        "/settings",
         "/onboarding",
         "/home",
         "/learn",

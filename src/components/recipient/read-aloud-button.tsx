@@ -3,10 +3,8 @@
 import { useEffect, useState } from "react";
 import { IconStop, IconVolume } from "~/components/icons";
 import { Button } from "~/components/ui/button";
+import { currentSpeechRate } from "~/lib/preferences";
 import { cn } from "~/lib/utils";
-
-// Slightly slower than normal speech so it's easier to follow.
-const SPEECH_RATE = 0.9;
 
 /**
  * Reads text out loud with the browser's built-in voice (free, no AI).
@@ -48,7 +46,8 @@ export function ReadAloudButton({
     }
     synth.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = SPEECH_RATE;
+    // Follows the "Reading speed" setting (slightly slow by default).
+    utterance.rate = currentSpeechRate();
     utterance.lang = "en-US";
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => setSpeaking(false);

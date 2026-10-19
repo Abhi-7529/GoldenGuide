@@ -114,7 +114,8 @@ export default function SignupPage() {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        By creating an account, you agree to our{" "}
+        GoldenGuide is currently available to people in the United States. By
+        creating an account, you agree to our{" "}
         <Link href="/terms" className="underline underline-offset-4">
           Terms
         </Link>{" "}
