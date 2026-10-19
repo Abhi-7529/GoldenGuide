@@ -143,9 +143,17 @@ export function Navbar({
           ) : account ? (
             <AccountMenu account={account} onSignOut={handleSignOut} />
           ) : (
-            <Button asChild size="sm">
-              <Link href="/login">Get Started</Link>
-            </Button>
+            <>
+              <Link
+                href="/login"
+                className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
+              >
+                Sign in
+              </Link>
+              <Button asChild size="sm">
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            </>
           )}
 
           {showLinks && (
@@ -168,6 +176,15 @@ export function Navbar({
 
       {open && showLinks && (
         <div className="flex flex-col gap-1 border-t border-border px-6 py-4 md:hidden">
+          {authReady && !account && (
+            <Link
+              href="/login"
+              onClick={() => setOpen(false)}
+              className="rounded-md px-2 py-2.5 text-base font-medium text-foreground transition-colors hover:bg-accent sm:hidden"
+            >
+              Sign in
+            </Link>
+          )}
           {links.map((link) => (
             <Link
               key={link.href}

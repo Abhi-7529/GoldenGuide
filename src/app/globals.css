@@ -31,6 +31,10 @@
   --color-destructive: var(--destructive);
   --color-ring: var(--ring);
   --color-sidebar: var(--sidebar);
+  /* Deep navy from the logo, for high-contrast landing page sections */
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-navy-muted: var(--navy-muted);
   /* Soft tinted tiles for stats and feature cards */
   --color-tile-teal: var(--tile-teal);
   --color-tile-teal-foreground: var(--tile-teal-foreground);
@@ -71,6 +75,9 @@
   --destructive: oklch(0.577 0.245 27.325);
   --ring: oklch(0.72 0.13 78);
   --sidebar: oklch(1 0 0);
+  --navy: oklch(0.27 0.08 268);
+  --navy-foreground: oklch(0.98 0.005 85);
+  --navy-muted: oklch(0.85 0.02 265);
   --card-shadow:
     0 1px 2px oklch(0.3 0.02 85 / 0.05),
     0 6px 20px -6px oklch(0.3 0.02 85 / 0.1);
@@ -88,6 +95,18 @@
 @theme {
   --animate-pop-in: pop-in 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-draw-check: draw-check 0.4s ease-out 0.25s both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-float-slow: float 8s ease-in-out 1s infinite;
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
 
   @keyframes pop-in {
     from {
@@ -133,6 +152,9 @@
   --destructive: oklch(0.704 0.191 22.216);
   --ring: oklch(0.78 0.14 78);
   --sidebar: oklch(0.2 0.015 250);
+  --navy: oklch(0.24 0.06 265);
+  --navy-foreground: oklch(0.98 0.005 85);
+  --navy-muted: oklch(0.85 0.02 265);
   --card-shadow:
     0 1px 2px oklch(0 0 0 / 0.3), 0 6px 20px -6px oklch(0 0 0 / 0.4);
   --tile-teal: oklch(0.3 0.05 215);

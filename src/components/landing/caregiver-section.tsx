@@ -1,98 +1,90 @@
-import { IconCheck } from "~/components/icons";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import Link from "next/link";
+import {
+  IconArrowRight,
+  IconBook,
+  IconMessageCircle,
+  IconShieldCheck,
+  IconTrendingUp,
+} from "~/components/icons";
+import { BrowserFrame, CaregiverPreview } from "~/components/landing/previews";
+import { Button } from "~/components/ui/button";
 
-const completedLessons = [
-  "Understanding Your Monthly Budget",
-  "Recognizing Common Financial Scams",
-  "Reading a Bill Statement",
-];
-
-const activity = [
-  { text: "Completed a scam-awareness scenario", time: "2 days ago" },
-  { text: "Finished lesson: Understanding Interest", time: "5 days ago" },
-  { text: "Started topic: Managing Savings", time: "1 week ago" },
+const points = [
+  {
+    icon: IconBook,
+    title: "Choose helpful lessons",
+    body: "Assign lessons or suggest topics that fit what your loved one is facing.",
+  },
+  {
+    icon: IconTrendingUp,
+    title: "Follow progress, with permission",
+    body: "Once they connect with your invite code, see the lessons they finish and the practice they try.",
+  },
+  {
+    icon: IconMessageCircle,
+    title: "Encourage and stay in touch",
+    body: 'Send a message, cheer them on, or answer a quick "Is this a scam?" question.',
+  },
 ];
 
 export function CaregiverSection() {
   return (
-    <section id="for-caregivers" className="border-t border-border px-6 py-20">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
-        <div className="flex flex-col items-start gap-4 text-left">
-          <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Support them without taking control.
+    <section id="for-caregivers" className="scroll-mt-20 px-6 py-20 sm:py-24">
+      <div className="mx-auto grid max-w-6xl items-center gap-14 lg:grid-cols-2">
+        <div className="flex flex-col gap-6">
+          <p className="text-sm font-semibold tracking-widest text-primary-strong uppercase">
+            For family caregivers
+          </p>
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            Support their independence, not their decisions
           </h2>
-          <p className="text-lg text-muted-foreground">
-            GoldenGuide gives caregivers a simple way to support an older
-            adult's financial learning, while allowing them to remain in control
-            of their own decisions.
+          <p className="text-xl leading-relaxed text-muted-foreground">
+            GoldenGuide helps you encourage a parent or loved one to learn, at
+            their own pace. They stay in charge of their own money.
           </p>
-          <p className="text-muted-foreground">
-            Here's an example of what you'll see after adding a family member —
-            like a parent — to your account.
+          <ul className="flex flex-col gap-5">
+            {points.map((point) => (
+              <li key={point.title} className="flex gap-4">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent text-primary-strong">
+                  <point.icon className="size-6" />
+                </span>
+                <span className="flex flex-col gap-1">
+                  <span className="text-lg font-semibold">{point.title}</span>
+                  <span className="text-lg text-muted-foreground">
+                    {point.body}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p className="flex items-start gap-3 rounded-2xl border border-border bg-card p-4 text-base">
+            <IconShieldCheck className="mt-0.5 size-5 shrink-0 text-primary-strong" />
+            Caregivers never see bank accounts or move money. Personal budgets
+            stay private unless your loved one chooses to share them.
           </p>
+          <Button asChild size="xl" className="w-full sm:w-fit">
+            <Link href="/signup">
+              Support a Loved One
+              <IconArrowRight />
+            </Link>
+          </Button>
         </div>
 
-        <Card className="w-full shadow-md">
-          <CardHeader className="gap-1">
-            <Badge variant="outline" className="mb-1 w-fit">
-              Example
-            </Badge>
-            <h3 className="text-lg font-semibold">Mom's Learning Progress</h3>
-            <span className="text-xs text-muted-foreground">
-              After 2 months on GoldenGuide
-            </span>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Overall progress</span>
-                <span>68%</span>
-              </div>
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full w-[68%] rounded-full bg-primary" />
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium">Completed lessons</p>
-              <ul className="flex flex-col gap-2">
-                {completedLessons.map((lesson) => (
-                  <li
-                    key={lesson}
-                    className="flex items-center gap-2 text-sm text-muted-foreground"
-                  >
-                    <IconCheck className="size-4 shrink-0 text-primary-strong" />
-                    {lesson}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium">Topics being studied</p>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">Managing Savings</Badge>
-                <Badge variant="secondary">Understanding Loans</Badge>
-              </div>
-            </div>
-
-            <div>
-              <p className="mb-2 text-sm font-medium">Recent activity</p>
-              <ul className="flex flex-col gap-2">
-                {activity.map((item) => (
-                  <li
-                    key={item.text}
-                    className="flex items-center justify-between text-sm text-muted-foreground"
-                  >
-                    <span>{item.text}</span>
-                    <span className="text-xs">{item.time}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="relative">
+          <div
+            aria-hidden="true"
+            className="absolute inset-6 -z-10 rounded-3xl bg-tile-amber blur-2xl"
+          />
+          <BrowserFrame
+            label="Preview of the caregiver dashboard: a weekly summary and assigned lessons for one learner"
+            className="mx-auto max-w-md"
+          >
+            <CaregiverPreview />
+          </BrowserFrame>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Example of a caregiver&apos;s weekly summary
+          </p>
+        </div>
       </div>
     </section>
   );

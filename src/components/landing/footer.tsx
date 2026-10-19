@@ -1,40 +1,77 @@
 import Link from "next/link";
 import { Logo } from "~/components/logo";
 
-const links = [
-  { href: "/#how-it-works", label: "How It Works" },
-  { href: "/#for-caregivers", label: "For Caregivers" },
-  { href: "/organizations", label: "For Organizations" },
-  { href: "/help", label: "Help" },
-  { href: "/contact", label: "Contact" },
-  { href: "/privacy", label: "Privacy" },
-  { href: "/terms", label: "Terms" },
+const columns = [
+  {
+    title: "GoldenGuide",
+    links: [
+      { href: "/#how-it-works", label: "How It Works" },
+      { href: "/#features", label: "Features" },
+      { href: "/#for-caregivers", label: "For Caregivers" },
+      { href: "/#pricing", label: "Pricing" },
+    ],
+  },
+  {
+    title: "Support",
+    links: [
+      { href: "/help", label: "Help & Support" },
+      { href: "/contact", label: "Contact Us" },
+      { href: "/organizations", label: "Organizations" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
+    ],
+  },
 ];
 
 export function Footer() {
   return (
-    <footer className="border-t border-border px-6 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 sm:flex-row sm:justify-between">
-        <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-          <Logo className="size-6" />
-          GoldenGuide
-        </span>
-        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
-          {links.map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.label}
+    <footer className="border-t border-border bg-card px-6 pt-14 pb-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-12">
+        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+          <div className="flex flex-col gap-4">
+            <Link href="/" className="flex w-fit items-center gap-2">
+              <Logo className="size-9" />
+              <span className="font-heading text-xl font-semibold tracking-tight">
+                GoldenGuide
+              </span>
             </Link>
+            <p className="max-w-xs text-base text-muted-foreground">
+              Simple money lessons, safe scam practice and caregiver support,
+              made for older adults.
+            </p>
+          </div>
+          {columns.map((column) => (
+            <nav
+              key={column.title}
+              aria-label={column.title}
+              className="flex flex-col gap-3"
+            >
+              <p className="text-sm font-semibold">{column.title}</p>
+              {column.links.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="w-fit text-base text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
           ))}
-        </nav>
+        </div>
+        <div className="flex flex-col gap-2 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row sm:justify-between">
+          <p>© {new Date().getFullYear()} GoldenGuide. All rights reserved.</p>
+          <p>
+            Financial education, not financial advice. Available in the United
+            States.
+          </p>
+        </div>
       </div>
-      <p className="mx-auto mt-6 max-w-6xl text-center text-sm text-muted-foreground sm:text-left">
-        © {new Date().getFullYear()} GoldenGuide. Financial education, not
-        financial advice. Available in the United States.
-      </p>
     </footer>
   );
 }

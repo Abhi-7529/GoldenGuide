@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
-import { AboutSection } from "~/components/landing/about-section";
+import { AccessibilitySection } from "~/components/landing/accessibility-section";
 import { CaregiverSection } from "~/components/landing/caregiver-section";
 import { CTA } from "~/components/landing/cta";
 import { Features } from "~/components/landing/features";
 import { Hero } from "~/components/landing/hero";
 import { HowItWorks } from "~/components/landing/how-it-works";
-import { InteractiveDemo } from "~/components/landing/interactive-demo";
+import { OrganizationsSection } from "~/components/landing/organizations-section";
 import { Pricing } from "~/components/landing/pricing";
-import { ProblemSection } from "~/components/landing/problem-section";
-import { TrustSection } from "~/components/landing/trust-section";
 import { Reveal } from "~/components/reveal";
 import { createClient } from "~/lib/supabase/server";
 
@@ -38,28 +36,16 @@ export default async function Home({
       )}
       <Hero />
       <Reveal>
-        <ProblemSection />
-      </Reveal>
-      <Reveal>
         <HowItWorks />
       </Reveal>
-      <Reveal>
-        <InteractiveDemo />
-      </Reveal>
+      <Features />
+      <AccessibilitySection />
       <Reveal>
         <CaregiverSection />
       </Reveal>
+      <Pricing />
       <Reveal>
-        <Features />
-      </Reveal>
-      <Reveal>
-        <Pricing />
-      </Reveal>
-      <Reveal>
-        <AboutSection />
-      </Reveal>
-      <Reveal>
-        <TrustSection />
+        <OrganizationsSection />
       </Reveal>
       <Reveal>
         <CTA />
