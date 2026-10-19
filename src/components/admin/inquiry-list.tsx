@@ -16,6 +16,9 @@ export function InquiryList({ inquiries }: { inquiries: ContactInquiry[] }) {
   const [filter, setFilter] = useState<Filter>("new");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The message waiting for a "Yes, delete" click. Confirmed on the page,
+  // since some browsers block pop-up confirm dialogs.
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   const shown = inquiries.filter(
     (i) => filter === "all" || i.status === filter,
@@ -50,12 +53,22 @@ export function InquiryList({ inquiries }: { inquiries: ContactInquiry[] }) {
     );
   }
 
-  function remove(inquiry: ContactInquiry) {
-    if (!window.confirm(`Delete the message from ${inquiry.name}?`)) return;
-    const supabase = createClient();
-    return run(inquiry.id, () =>
-      supabase.from("contact_inquiries").delete().eq("id", inquiry.id),
-    );
+  async function remove(inquiry: ContactInquiry) {
+    setBusyId(inquiry.id);
+    setError(null);
+    const { data, error } = await createClient()
+      .from("contact_inquiries")
+      .delete()
+      .eq("id", inquiry.id)
+      .select("id");
+    setBusyId(null);
+    // No error but nothing deleted means the database didn't allow it.
+    if (error || !data?.length) {
+      setError("That message couldn't be deleted. Please try again.");
+      return;
+    }
+    setConfirmingId(null);
+    router.refresh();
   }
 
   return (
@@ -144,15 +157,37 @@ export function InquiryList({ inquiries }: { inquiries: ContactInquiry[] }) {
                 >
                   {inquiry.status === "new" ? "Mark as handled" : "Mark as new"}
                 </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  disabled={busyId === inquiry.id}
-                  onClick={() => remove(inquiry)}
-                >
-                  Delete
-                </Button>
+                {confirmingId === inquiry.id ? (
+                  <span className="flex flex-wrap items-center gap-2 rounded-full border border-destructive/40 py-1 pr-1 pl-3">
+                    <span className="text-sm">Delete this message?</span>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      disabled={busyId === inquiry.id}
+                      onClick={() => void remove(inquiry)}
+                    >
+                      {busyId === inquiry.id ? "Deleting…" : "Yes, delete"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={busyId === inquiry.id}
+                      onClick={() => setConfirmingId(null)}
+                    >
+                      Cancel
+                    </Button>
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-destructive hover:text-destructive"
+                    disabled={busyId === inquiry.id}
+                    onClick={() => setConfirmingId(inquiry.id)}
+                  >
+                    Delete
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
