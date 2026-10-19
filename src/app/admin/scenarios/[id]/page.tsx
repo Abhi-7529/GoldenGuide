@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ScenarioForm } from "~/components/admin/scenario-form";
 import { createClient } from "~/lib/supabase/server";
 import type { Scenario } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Edit scenario" };
 
 export default async function EditScenarioPage({
   params,

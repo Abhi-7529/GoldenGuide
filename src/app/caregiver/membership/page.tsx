@@ -10,6 +10,7 @@ import { IconCheck } from "~/components/icons";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { env } from "~/env";
 import { loadMembership, PLANS, type PlanId } from "~/lib/membership";
 import { refreshMembership } from "~/lib/stripe";
 import { createClient } from "~/lib/supabase/server";
@@ -185,10 +186,13 @@ export default async function MembershipPage({
         })}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Payments are in Stripe test mode. Use card 4242 4242 4242 4242 with any
-        future date and any CVC.
-      </p>
+      {/* Only shown with Stripe test keys; real customers never see it. */}
+      {env.STRIPE_SECRET_KEY.startsWith("sk_test_") && (
+        <p className="text-xs text-muted-foreground">
+          Payments are in Stripe test mode. Use card 4242 4242 4242 4242 with
+          any future date and any CVC.
+        </p>
+      )}
     </div>
   );
 }

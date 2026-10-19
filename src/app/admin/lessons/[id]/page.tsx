@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { LessonForm } from "~/components/admin/lesson-form";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Edit lesson" };
 
 export default async function EditLessonPage({
   params,

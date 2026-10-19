@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { AiScenarioGenerator } from "~/components/admin/ai-scenario-generator";
 import { ScenarioForm } from "~/components/admin/scenario-form";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "New scenario" };
 
 export default async function NewScenarioPage({
   searchParams,

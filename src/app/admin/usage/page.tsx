@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { StatCard } from "~/components/admin/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { createClient } from "~/lib/supabase/server";
 import type { AdminUsage } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Usage" };
 
 function TopList({
   title,

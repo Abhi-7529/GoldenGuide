@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { ContentList } from "~/components/admin/content-list";
 import { channelLabel, levelLabel } from "~/lib/simulations";
 import { createClient } from "~/lib/supabase/server";
 import type { ScamSimulation } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Scam simulations" };
 
 export default async function AdminSimulationsPage() {
   const supabase = await createClient();

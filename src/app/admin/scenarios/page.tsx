@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { ContentList } from "~/components/admin/content-list";
 import { createClient } from "~/lib/supabase/server";
 import type { Scenario } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Scenarios" };
 
 export default async function AdminScenariosPage() {
   const supabase = await createClient();

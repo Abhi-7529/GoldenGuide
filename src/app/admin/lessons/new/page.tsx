@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { AiLessonGenerator } from "~/components/admin/ai-lesson-generator";
 import { LessonForm } from "~/components/admin/lesson-form";
+
+export const metadata: Metadata = { title: "New lesson" };
 
 export default function NewLessonPage() {
   return (

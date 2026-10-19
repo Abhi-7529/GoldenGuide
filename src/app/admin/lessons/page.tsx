@@ -1,7 +1,10 @@
+import type { Metadata } from "next";
 import { ContentList } from "~/components/admin/content-list";
 import { levelLabel } from "~/lib/learning-plan";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Lessons" };
 
 export default async function AdminLessonsPage() {
   const supabase = await createClient();

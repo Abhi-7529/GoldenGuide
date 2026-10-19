@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { SimulationForm } from "~/components/admin/simulation-form";
 import { createClient } from "~/lib/supabase/server";
 import type { Lesson } from "~/lib/types";
+
+export const metadata: Metadata = { title: "New scam simulation" };
 
 export default async function NewSimulationPage() {
   const supabase = await createClient();
