@@ -22,12 +22,16 @@ export const env = createEnv({
       .string()
       .url()
       .default("https://goldenguide-seven.vercel.app"),
+    // A monitored inbox for privacy and legal requests, shown on the Privacy
+    // and Terms pages once set. Without it, those pages point to Contact.
+    NEXT_PUBLIC_LEGAL_EMAIL: z.string().email().optional(),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+    NEXT_PUBLIC_LEGAL_EMAIL: process.env.NEXT_PUBLIC_LEGAL_EMAIL,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,

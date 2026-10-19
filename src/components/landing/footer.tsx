@@ -32,7 +32,7 @@ export function Footer() {
       </div>
       <p className="mx-auto mt-6 max-w-6xl text-center text-sm text-muted-foreground sm:text-left">
         © {new Date().getFullYear()} GoldenGuide. Financial education, not
-        financial advice.
+        financial advice. Available in the United States.
       </p>
     </footer>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LegalContact } from "~/components/legal-contact";
 import { Prose, PublicPage } from "~/components/public-page";
 
 export const metadata: Metadata = {
@@ -15,8 +16,11 @@ export default function TermsPage() {
     >
       <Prose>
         <p>
-          These terms explain the rules for using GoldenGuide. By creating an
-          account, you agree to them.
+          These terms explain the rules for using GoldenGuide. GoldenGuide is
+          operated by its founder, who is based in Texas, United States
+          (&quot;GoldenGuide&quot;, &quot;we&quot; or &quot;us&quot;). By
+          creating an account or using GoldenGuide, you agree to these terms and
+          to our <Link href="/privacy">Privacy Policy</Link>.
         </p>
 
         <h2>Education, not financial advice</h2>
@@ -28,13 +32,27 @@ export default function TermsPage() {
           professional.
         </p>
 
-        <h2>Your account</h2>
+        <h2>Who can use GoldenGuide</h2>
         <ul>
           <li>You must be 18 or older to create an account.</li>
+          <li>
+            GoldenGuide accounts and memberships are currently offered only to
+            people living in the United States. We don&apos;t offer accounts or
+            paid memberships to people in the European Union, the United
+            Kingdom, or other places outside the United States at this time.
+          </li>
+        </ul>
+
+        <h2>Your account</h2>
+        <ul>
           <li>
             Please give accurate information and keep your password private.
           </li>
           <li>You&apos;re responsible for what happens in your account.</li>
+          <li>
+            You can ask us to delete your account at any time, as described in
+            our <Link href="/privacy">Privacy Policy</Link>.
+          </li>
         </ul>
 
         <h2>Learners and caregivers</h2>
@@ -50,25 +68,38 @@ export default function TermsPage() {
         <ul>
           <li>
             <strong>Free:</strong> a caregiver can connect with 1 learner, who
-            can finish up to 5 lessons a day. Practice and the Budget Calculator
-            are included.
+            can finish up to 5 lessons a day. The Budget Calculator and Scam
+            Practice are included.
           </li>
           <li>
-            <strong>
-              GoldenGuide Family ($7.99 a month, plus sales tax where it
-              applies):
-            </strong>{" "}
-            a caregiver can connect with up to 3 learners, with unlimited
-            lessons. Only caregivers can buy a membership.
+            <strong>GoldenGuide Family:</strong> $7.99 a month, plus sales tax
+            where it applies. A caregiver can connect with up to 3 learners,
+            with unlimited lessons. Only caregivers can buy a membership.
           </li>
           <li>
-            Family renews every month until you cancel. You can cancel at any
-            time from the Membership page, and you keep Family until the end of
-            the month you&apos;ve paid for. Payments are handled by Stripe.
+            Family renews automatically every month and is charged to the
+            payment method you give at checkout. Payments are handled by Stripe.
+          </li>
+        </ul>
+
+        <h2>Canceling and refunds</h2>
+        <ul>
+          <li>
+            You can cancel at any time from the Membership page. Canceling stops
+            future renewals.
+          </li>
+          <li>
+            You keep Family until the end of the month you&apos;ve already paid
+            for. After that, the Free plan&apos;s limits apply again.
+          </li>
+          <li>
+            We generally don&apos;t give refunds for part of a month, except
+            where the law requires it or we agree to one. If you think you were
+            charged by mistake, <LegalContact />.
           </li>
           <li>
             If a membership ends, nothing is deleted. Progress and connections
-            stay, and the Free plan&apos;s limits apply again.
+            stay.
           </li>
         </ul>
 
@@ -76,7 +107,7 @@ export default function TermsPage() {
         <p>
           Please don&apos;t misuse GoldenGuide. That includes trying to get into
           other people&apos;s accounts, interfering with the service, or using
-          it to harass anyone. We may suspend accounts that do.
+          it to harass anyone. We may suspend or close accounts that do.
         </p>
 
         <h2>Our content</h2>
@@ -91,21 +122,29 @@ export default function TermsPage() {
         <p>
           We may improve or change GoldenGuide over time. If we make important
           changes to these terms, we&apos;ll update the date at the top of this
-          page.
+          page and, where appropriate, let you know in GoldenGuide.
         </p>
 
         <h2>Limits of our responsibility</h2>
         <p>
           We work hard to keep GoldenGuide accurate and available, but we
-          can&apos;t promise it will always be error-free or uninterrupted. To
-          the extent the law allows, GoldenGuide isn&apos;t responsible for
-          money decisions you make.
+          can&apos;t promise it will always be error-free or uninterrupted.
+          GoldenGuide is provided &quot;as is&quot;. To the extent the law
+          allows, GoldenGuide isn&apos;t responsible for money decisions you
+          make, or for indirect losses. Nothing in these terms limits rights you
+          have under consumer protection laws that can&apos;t be waived.
+        </p>
+
+        <h2>Governing law</h2>
+        <p>
+          These terms are governed by the laws of the State of Texas, United
+          States, subject to any consumer protection laws and other legal
+          requirements that apply to you.
         </p>
 
         <h2>Questions</h2>
         <p>
-          <Link href="/contact">Send us a message</Link> and we&apos;ll be glad
-          to help.
+          To ask about these terms, <LegalContact />.
         </p>
       </Prose>
     </PublicPage>
