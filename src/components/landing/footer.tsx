@@ -5,6 +5,7 @@ const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/#for-caregivers", label: "For Caregivers" },
   { href: "/organizations", label: "For Organizations" },
+  { href: "/help", label: "Help" },
   { href: "/contact", label: "Contact" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },

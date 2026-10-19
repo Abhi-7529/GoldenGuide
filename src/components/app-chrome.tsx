@@ -9,7 +9,9 @@ export function AppChrome({ children }: { children: React.ReactNode }) {
   const isMarketing = pathname === "/";
   const isPublic =
     isMarketing ||
-    ["/organizations", "/contact", "/privacy", "/terms"].includes(pathname);
+    ["/organizations", "/contact", "/help", "/privacy", "/terms"].includes(
+      pathname,
+    );
 
   return (
     <>

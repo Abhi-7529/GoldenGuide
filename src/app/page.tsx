@@ -12,7 +12,12 @@ import { TrustSection } from "~/components/landing/trust-section";
 import { Reveal } from "~/components/reveal";
 import { createClient } from "~/lib/supabase/server";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { account } = await searchParams;
   // The landing page is for new visitors. Signed-in people go straight to
   // their own home, so nobody is left wondering how to get back to it.
   const supabase = await createClient();
@@ -23,6 +28,14 @@ export default async function Home() {
 
   return (
     <main className="flex flex-col">
+      {account === "deleted" && (
+        <p
+          role="status"
+          className="mx-auto mt-6 w-[calc(100%-2rem)] max-w-3xl rounded-2xl border border-primary/30 bg-accent p-4 text-center text-lg"
+        >
+          Your account has been deleted. Thank you for using GoldenGuide.
+        </p>
+      )}
       <Hero />
       <Reveal>
         <ProblemSection />

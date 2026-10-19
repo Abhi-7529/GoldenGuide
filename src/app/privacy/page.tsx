@@ -148,9 +148,10 @@ export default function PrivacyPage() {
         <ul>
           <li>We keep your account information while your account is open.</li>
           <li>
-            If you ask us to delete your account, we aim to delete or
-            de-identify your account information, saved budgets, learning
-            progress and messages within 30 days.
+            You can delete your account yourself in Settings. It&apos;s removed
+            right away, along with your saved budgets, learning progress and
+            messages. If you ask us to delete it instead, we aim to do so within
+            30 days.
           </li>
           <li>
             Copies in our database provider&apos;s backups are removed as those
@@ -181,8 +182,9 @@ export default function PrivacyPage() {
             You can stop sharing a budget, or remove a caregiver connection.
           </li>
           <li>
-            You can ask us for a copy of your information, to correct it, or to
-            delete your account and everything in it.
+            You can change your name and email in My Profile, and delete your
+            account and everything in it from Settings. You can also ask us for
+            a copy of your information.
           </li>
           <li>
             Depending on the state you live in, you may have other privacy
