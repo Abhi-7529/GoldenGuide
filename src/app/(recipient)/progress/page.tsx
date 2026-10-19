@@ -91,8 +91,13 @@ export default async function MyProgressPage() {
             <>
               <p className="text-xl">
                 You tried {scam.completed} pretend{" "}
-                {scam.completed === 1 ? "scam" : "scams"} and picked the safe
-                choice first time in {scam.safe}. Your level:{" "}
+                {scam.completed === 1 ? "scam" : "scams"}.{" "}
+                {scam.safe === 0
+                  ? "Keep practicing. Each try helps you spot the warning signs."
+                  : `You picked the safe choice on your first try ${scam.safe} ${
+                      scam.safe === 1 ? "time" : "times"
+                    }.`}{" "}
+                Your level:{" "}
                 <span className="font-semibold">{levelLabel(scamLevel)}</span>.
               </p>
               {scam.strong.length > 0 && (
