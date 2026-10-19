@@ -188,7 +188,7 @@ export function buildWeeklySummary(
     const safe = [...first.values()].filter((a) => a.is_safe).length;
     const subject = sentences.length > 0 ? "They" : name;
     sentences.push(
-      `${subject} tried ${plural(tried, "pretend scam")} and picked the safe choice first time in ${safe}.`,
+      `${subject} tried ${plural(tried, "pretend scam")} and picked the safe choice on the first try ${safe === tried ? "every time" : `in ${safe} of ${tried}`}.`,
     );
   }
 
