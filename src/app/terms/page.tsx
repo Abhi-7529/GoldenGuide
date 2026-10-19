@@ -12,12 +12,12 @@ export default function TermsPage() {
   return (
     <PublicPage
       title="Terms of Service"
-      intro={<p>Last updated: October 18, 2026</p>}
+      intro={<p>Last updated: October 19, 2026</p>}
     >
       <Prose>
         <p>
           These terms explain the rules for using GoldenGuide. GoldenGuide is
-          operated by its founder, Abhiram Bongarala, who is based in Texas,
+          operated by Sriabhiram Bongarala, an individual based in Texas,
           United States (&quot;GoldenGuide&quot;, &quot;we&quot; or
           &quot;us&quot;). By creating an account or using GoldenGuide, you
           agree to these terms and to our{" "}

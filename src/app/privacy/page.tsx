@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <PublicPage
       title="Privacy Policy"
-      intro={<p>Last updated: October 18, 2026</p>}
+      intro={<p>Last updated: October 19, 2026</p>}
     >
       <Prose>
         <p>
@@ -25,10 +25,10 @@ export default function PrivacyPage() {
 
         <h2>Who we are</h2>
         <p>
-          GoldenGuide is operated by its founder, Abhiram Bongarala, who is
-          based in Texas, United States. When this policy says
+          GoldenGuide is operated by Sriabhiram Bongarala, an individual based
+          in Texas, United States. When this policy says
           &quot;GoldenGuide&quot;, &quot;we&quot; or &quot;us&quot;, it means
-          Abhiram Bongarala as the operator of GoldenGuide. To reach us about
+          Sriabhiram Bongarala as the operator of GoldenGuide. To reach us about
           privacy, <LegalContact />.
         </p>
 
