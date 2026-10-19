@@ -13,6 +13,9 @@ export const env = createEnv({
     STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
     // Optional locally; required for the Stripe webhook endpoint.
     STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
+    // Vercel sends this with its scheduled (cron) requests. Use a long
+    // random value; without it the cron endpoint stays switched off.
+    CRON_SECRET: z.string().min(1).optional(),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -36,6 +39,7 @@ export const env = createEnv({
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    CRON_SECRET: process.env.CRON_SECRET,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

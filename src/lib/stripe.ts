@@ -136,6 +136,19 @@ export async function syncSubscription(subscription: Stripe.Subscription) {
     { onConflict: "caregiver_id" },
   );
   if (error) throw error;
+
+  // Renewing (in the app or Stripe's billing portal) means they're staying,
+  // so a scheduled account deletion is called off.
+  if (
+    isActive(subscription.status, periodEnd) &&
+    !subscription.cancel_at_period_end
+  ) {
+    await admin
+      .from("profiles")
+      .update({ deletion_scheduled_for: null })
+      .eq("id", caregiverId)
+      .not("deletion_scheduled_for", "is", null);
+  }
 }
 
 /**

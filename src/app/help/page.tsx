@@ -157,7 +157,9 @@ const sections: { title: string; faqs: Faq[] }[] = [
               Settings
             </Link>{" "}
             and choose &quot;Delete my account&quot;. This removes your account
-            and everything in it, and can&apos;t be undone.
+            and everything in it, and can&apos;t be undone. Caregivers with a
+            paid GoldenGuide Family month left can choose to keep using
+            GoldenGuide until it ends, and change their mind before then.
           </>
         ),
       },

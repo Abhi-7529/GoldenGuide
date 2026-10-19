@@ -1,5 +1,6 @@
 import type Stripe from "stripe";
 import { env } from "~/env";
+import { runDueDeletions } from "~/lib/account-deletion";
 import { stripe, syncSubscription } from "~/lib/stripe";
 
 // Keeps memberships in sync when subscriptions change outside the app
@@ -38,8 +39,12 @@ export async function POST(request: Request) {
       }
       case "customer.subscription.created":
       case "customer.subscription.updated":
+        await syncSubscription(event.data.object);
+        break;
       case "customer.subscription.deleted":
         await syncSubscription(event.data.object);
+        // A membership that ended may have an account waiting to be deleted.
+        await runDueDeletions();
         break;
     }
   } catch (error) {

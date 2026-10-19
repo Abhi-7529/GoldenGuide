@@ -6,6 +6,7 @@ import { DeleteAccount } from "~/components/account/delete-account";
 import { PreferencesForm } from "~/components/account/preferences-form";
 import { SignOutEverywhere } from "~/components/account/sign-out-everywhere";
 import { Button } from "~/components/ui/button";
+import { loadMembership } from "~/lib/membership";
 import { normalizePreferences } from "~/lib/preferences";
 import { createClient } from "~/lib/supabase/server";
 
@@ -18,12 +19,22 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, text_size, high_contrast, read_aloud_rate")
+    .select(
+      "role, text_size, high_contrast, read_aloud_rate, deletion_scheduled_for",
+    )
     .eq("id", data.user.id)
     .maybeSingle();
   if (!profile) redirect("/onboarding");
 
   const isCaregiver = profile.role === "caregiver";
+  const membership = isCaregiver ? await loadMembership(supabase) : null;
+  // A paid Family month that's still running can be used up before deletion.
+  const familyUntil =
+    membership?.plan === "family" &&
+    membership.current_period_end &&
+    new Date(membership.current_period_end).getTime() > Date.now()
+      ? membership.current_period_end
+      : null;
 
   return (
     <AccountShell
@@ -63,7 +74,11 @@ export default async function SettingsPage() {
         description="Permanently remove your account and everything in it."
         tone="danger"
       >
-        <DeleteAccount isCaregiver={isCaregiver} />
+        <DeleteAccount
+          isCaregiver={isCaregiver}
+          familyUntil={familyUntil}
+          scheduledFor={profile.deletion_scheduled_for}
+        />
       </Section>
     </AccountShell>
   );

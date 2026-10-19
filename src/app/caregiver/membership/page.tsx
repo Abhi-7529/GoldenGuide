@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   confirmCheckout,
@@ -64,10 +65,16 @@ export default async function MembershipPage({
     console.error("Couldn't refresh membership from Stripe", error);
   }
 
-  const [membership, { data: connectionRows }] = await Promise.all([
-    loadMembership(supabase),
-    supabase.rpc("get_my_connections"),
-  ]);
+  const [membership, { data: connectionRows }, { data: profile }] =
+    await Promise.all([
+      loadMembership(supabase),
+      supabase.rpc("get_my_connections"),
+      supabase
+        .from("profiles")
+        .select("deletion_scheduled_for")
+        .eq("id", userData.user.id)
+        .maybeSingle(),
+    ]);
   const connected = ((connectionRows as Connection[] | null) ?? []).filter(
     (c) => c.partner_role === "care_recipient",
   ).length;
@@ -96,6 +103,24 @@ export default async function MembershipPage({
           )}
         >
           {message.text}
+        </p>
+      )}
+      {profile?.deletion_scheduled_for && (
+        <p
+          role="status"
+          className="rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-sm"
+        >
+          Your account is scheduled to be deleted on{" "}
+          {formatDate(profile.deletion_scheduled_for)}. Keeping your Family
+          membership will also keep your account. You can also cancel the
+          deletion in{" "}
+          <Link
+            href="/settings"
+            className="font-medium underline underline-offset-4"
+          >
+            Settings
+          </Link>
+          .
         </p>
       )}
       {params.portal === "error" && (

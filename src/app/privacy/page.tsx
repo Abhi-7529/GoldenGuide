@@ -150,8 +150,9 @@ export default function PrivacyPage() {
           <li>
             You can delete your account yourself in Settings. It&apos;s removed
             right away, along with your saved budgets, learning progress and
-            messages. If you ask us to delete it instead, we aim to do so within
-            30 days.
+            messages. Caregivers with a paid GoldenGuide Family month left can
+            instead choose to have it deleted at the end of that month. If you
+            ask us to delete it, we aim to do so within 30 days.
           </li>
           <li>
             Copies in our database provider&apos;s backups are removed as those
