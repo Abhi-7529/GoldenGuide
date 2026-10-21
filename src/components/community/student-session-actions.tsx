@@ -31,7 +31,11 @@ export function StudentSessionActions({ session }: { session: Session }) {
   const [notes, setNotes] = useState(session.activity_notes);
 
   const started = hasStarted(session);
-  const open = OPEN_STATUSES.includes(session.status);
+  // An invitation or request whose time went by unanswered can't go ahead.
+  const lapsed =
+    started &&
+    (session.status === "invited" || session.status === "pending_approval");
+  const open = OPEN_STATUSES.includes(session.status) && !lapsed;
   const canLog =
     started && (LOGGABLE as readonly string[]).includes(session.status);
 
@@ -69,6 +73,16 @@ export function StudentSessionActions({ session }: { session: Session }) {
     }
     setLogging(false);
     router.refresh();
+  }
+
+  if (lapsed) {
+    return (
+      <p className="rounded-2xl border border-border bg-card p-5 text-sm text-muted-foreground shadow-card">
+        This time passed before the session was confirmed, so it didn't go
+        ahead. If you'd still like to teach {session.learner_name}, ask for a
+        new session.
+      </p>
+    );
   }
 
   if (!open && !canLog) return null;

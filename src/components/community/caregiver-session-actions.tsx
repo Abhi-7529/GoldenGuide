@@ -6,7 +6,12 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
-import { formatMinutes, OPEN_STATUSES, type Session } from "~/lib/community";
+import {
+  formatMinutes,
+  hasStarted,
+  OPEN_STATUSES,
+  type Session,
+} from "~/lib/community";
 import { createClient } from "~/lib/supabase/client";
 
 type Action =
@@ -37,6 +42,10 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
   const [joinDetails, setJoinDetails] = useState(session.join_details);
 
   const open = OPEN_STATUSES.includes(session.status);
+  // An invitation or request whose time went by before anyone confirmed it.
+  const lapsed =
+    hasStarted(session) &&
+    (session.status === "invited" || session.status === "pending_approval");
   const toVerify =
     session.status === "pending_verification" || session.status === "disputed";
 
@@ -119,16 +128,25 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-card">
-      {session.status === "pending_approval" && (
+      {lapsed ? (
         <p className="text-sm">
-          {session.student_name} asked for this session. Approve it if the time
-          and topic work for {session.learner_name}.
+          This time passed before the session was confirmed. Choose a new time
+          to send it again, or cancel it.
         </p>
-      )}
-      {session.status === "invited" && (
-        <p className="text-sm text-muted-foreground">
-          Waiting for {session.student_name} to accept.
-        </p>
+      ) : (
+        <>
+          {session.status === "pending_approval" && (
+            <p className="text-sm">
+              {session.student_name} asked for this session. Approve it if the
+              time and topic work for {session.learner_name}.
+            </p>
+          )}
+          {session.status === "invited" && (
+            <p className="text-sm text-muted-foreground">
+              Waiting for {session.student_name} to accept.
+            </p>
+          )}
+        </>
       )}
       {toVerify && (
         <div className="flex flex-col gap-1 text-sm">
@@ -217,7 +235,7 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
         </div>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {session.status === "pending_approval" && (
+          {session.status === "pending_approval" && !lapsed && (
             <Button disabled={busy} onClick={() => void act("approve")}>
               {busy ? "Approving..." : "Approve"}
             </Button>

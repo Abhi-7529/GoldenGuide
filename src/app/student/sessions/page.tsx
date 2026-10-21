@@ -26,7 +26,9 @@ export default async function StudentSessionsPage() {
   );
 
   const mine = sessions.filter((s) => s.student_id === userId);
-  const toAnswer = mine.filter((s) => s.status === "invited");
+  // Each session sits where the student's next step is. Once there's
+  // nothing left for them to do, it moves to Past sessions on its own.
+  const toAnswer = mine.filter((s) => s.status === "invited" && !hasStarted(s));
   const toLog = mine.filter(
     (s) =>
       s.status === "correction_requested" ||
@@ -34,15 +36,11 @@ export default async function StudentSessionsPage() {
   );
   const upcoming = mine.filter(
     (s) =>
-      s.status === "pending_approval" ||
-      (s.status === "scheduled" && !hasStarted(s)),
+      (s.status === "pending_approval" || s.status === "scheduled") &&
+      !hasStarted(s),
   );
-  const waiting = mine.filter((s) => s.status === "pending_verification");
-  const past = mine
-    .filter((s) =>
-      ["verified", "disputed", "rejected", "canceled"].includes(s.status),
-    )
-    .reverse();
+  const current = new Set([...toAnswer, ...toLog, ...upcoming]);
+  const past = mine.filter((s) => !current.has(s)).reverse();
 
   const row = (s: (typeof mine)[number]) => (
     <SessionRow
@@ -91,12 +89,6 @@ export default async function StudentSessionsPage() {
         title="Upcoming"
         sessions={upcoming}
         empty="Nothing coming up yet."
-      >
-        {row}
-      </SessionList>
-      <SessionList
-        title="Waiting for the caregiver to check"
-        sessions={waiting}
       >
         {row}
       </SessionList>

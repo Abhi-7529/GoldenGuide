@@ -40,7 +40,7 @@ export default async function StudentOverviewPage() {
   const hours = summarizeHours(mine);
   const needsYou = mine.filter(
     (s) =>
-      s.status === "invited" ||
+      (s.status === "invited" && !hasStarted(s)) ||
       s.status === "correction_requested" ||
       (s.status === "scheduled" && hasStarted(s)),
   );
