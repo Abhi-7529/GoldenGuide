@@ -12,8 +12,10 @@ import {
   IconShieldCheck,
   IconTarget,
   IconTrendingUp,
+  IconUsers,
 } from "~/components/icons";
 import { Button } from "~/components/ui/button";
+import { env } from "~/env";
 import { cn } from "~/lib/utils";
 
 const tabs: NavItem[] = [
@@ -23,6 +25,9 @@ const tabs: NavItem[] = [
   { href: "/scam-practice", label: "Scam Practice", icon: IconShieldCheck },
   { href: "/budget", label: "Budget", icon: IconCalculator },
   { href: "/progress", label: "My Progress", icon: IconTrendingUp },
+  ...(env.NEXT_PUBLIC_COMMUNITY_ENABLED
+    ? [{ href: "/community", label: "Community", icon: IconUsers }]
+    : []),
 ];
 
 function HelpLinks({

@@ -30,6 +30,12 @@ export const env = createEnv({
     // A monitored inbox for privacy and legal requests, shown on the Privacy
     // and Terms pages once set. Without it, those pages point to Contact.
     NEXT_PUBLIC_LEGAL_EMAIL: z.string().email().optional(),
+    // Community Skill Exchange (student volunteers). Off unless set to
+    // "true", so it can ship to Production before it's ready to launch.
+    NEXT_PUBLIC_COMMUNITY_ENABLED: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -37,6 +43,7 @@ export const env = createEnv({
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_LEGAL_EMAIL: process.env.NEXT_PUBLIC_LEGAL_EMAIL,
+    NEXT_PUBLIC_COMMUNITY_ENABLED: process.env.NEXT_PUBLIC_COMMUNITY_ENABLED,
     AI_GATEWAY_API_KEY: process.env.AI_GATEWAY_API_KEY,
     SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,

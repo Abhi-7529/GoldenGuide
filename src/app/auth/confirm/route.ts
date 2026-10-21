@@ -1,5 +1,6 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { homeForRole } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/server";
 
 const EMAIL_LINK_TYPES: EmailOtpType[] = [
@@ -49,11 +50,7 @@ export async function GET(request: Request) {
         .eq("id", data.user.id)
         .maybeSingle();
 
-      const destination = !profile
-        ? "/onboarding"
-        : profile.role === "caregiver"
-          ? "/caregiver"
-          : "/home";
+      const destination = homeForRole(profile?.role);
       return NextResponse.redirect(`${origin}${destination}`);
     }
   }

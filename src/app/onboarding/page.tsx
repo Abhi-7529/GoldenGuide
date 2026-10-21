@@ -1,8 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { IconArrowLeft, IconUser, IconUsers } from "~/components/icons";
+import { type FormEvent, useEffect, useState } from "react";
+import {
+  IconArrowLeft,
+  IconBook,
+  IconUser,
+  IconUsers,
+} from "~/components/icons";
 import {
   LearningPlanForm,
   type PlanAnswers,
@@ -13,17 +18,24 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { env } from "~/env";
+import {
+  INVITATION_CODE_PLACEHOLDER,
+  type RedeemResult,
+} from "~/lib/community";
+import { homeForRole, type Role } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/client";
 import { cn } from "~/lib/utils";
 
-type Role = "caregiver" | "care_recipient";
 type Step =
   | "checking"
   | "choose"
   | "plan"
   | "caregiver-topics"
   | "code"
-  | "code-shown";
+  | "code-shown"
+  | "student"
+  | "student-joined";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -36,6 +48,10 @@ export default function OnboardingPage() {
   const [profileCreated, setProfileCreated] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [studentCode, setStudentCode] = useState("");
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [guardianAck, setGuardianAck] = useState(false);
+  const [joinedCaregiver, setJoinedCaregiver] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -56,7 +72,7 @@ export default function OnboardingPage() {
         .maybeSingle();
 
       if (profile) {
-        router.replace(profile.role === "caregiver" ? "/caregiver" : "/home");
+        router.replace(homeForRole(profile.role));
         return;
       }
 
@@ -72,7 +88,13 @@ export default function OnboardingPage() {
     setError(null);
     if (chosen !== role) setPlan(null);
     setRole(chosen);
-    setStep(chosen === "caregiver" ? "caregiver-topics" : "plan");
+    setStep(
+      chosen === "caregiver"
+        ? "caregiver-topics"
+        : chosen === "student"
+          ? "student"
+          : "plan",
+    );
   }
 
   /** Creates the profile once, then saves any plan answers. */
@@ -150,6 +172,40 @@ export default function OnboardingPage() {
     router.refresh();
   }
 
+  /**
+   * Student accounts only exist through a caregiver's invitation code. The
+   * database checks the code and creates the account in one step, so there's
+   * no student profile at all unless the code was good.
+   */
+  async function finishStudent(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+    const supabase = createClient();
+    const { data, error: rpcError } = await supabase.rpc(
+      "redeem_student_invitation",
+      {
+        p_code: studentCode,
+        p_display_name: fullName.trim(),
+        p_age_confirmed: ageConfirmed,
+        p_guardian_ack: guardianAck,
+        p_time_zone: deviceTimeZone(),
+      },
+    );
+    setLoading(false);
+    const result = data as RedeemResult | null;
+    if (rpcError || !result) {
+      setError(rpcError?.message ?? "Something went wrong. Please try again.");
+      return;
+    }
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    setJoinedCaregiver(result.caregiver_name);
+    setStep("student-joined");
+  }
+
   if (step === "checking") {
     return (
       <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-6">
@@ -219,11 +275,133 @@ export default function OnboardingPage() {
                 Support a family member's progress.
               </span>
             </button>
+            {env.NEXT_PUBLIC_COMMUNITY_ENABLED && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => handleChooseRole("student")}
+                className={cn(
+                  "flex flex-col items-start gap-2 rounded-lg border border-border p-5 text-left transition-colors hover:bg-accent sm:col-span-2",
+                  role === "student" && "border-2 border-primary",
+                  "disabled:pointer-events-none disabled:opacity-50",
+                )}
+              >
+                <IconBook className="size-6 text-primary-strong" />
+                <span className="font-semibold">I'm a student volunteer</span>
+                <span className="text-sm text-muted-foreground">
+                  Help older adults learn new skills. You'll need an invitation
+                  code from a caregiver.
+                </span>
+              </button>
+            )}
           </div>
 
           {error && (
             <p className="text-center text-sm text-destructive">{error}</p>
           )}
+        </>
+      )}
+
+      {step === "student" && (
+        <form onSubmit={finishStudent} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2 text-center">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Enter your invitation code
+            </h1>
+            <p className="text-muted-foreground">
+              Student volunteers join through a caregiver they know. Ask them
+              for a code from their GoldenGuide Community page.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="studentCode">Invitation code</Label>
+            <Input
+              id="studentCode"
+              value={studentCode}
+              onChange={(e) => setStudentCode(e.target.value)}
+              placeholder={INVITATION_CODE_PLACEHOLDER}
+              autoComplete="off"
+              required
+            />
+            <p className="text-sm text-muted-foreground">
+              Families will see you as "{fullName.trim()}". You can change this
+              later.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={ageConfirmed}
+                onChange={(e) => setAgeConfirmed(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-primary"
+              />
+              I'm 13 or older.
+            </label>
+            <label className="flex items-start gap-3 text-sm">
+              <input
+                type="checkbox"
+                checked={guardianAck}
+                onChange={(e) => setGuardianAck(e.target.checked)}
+                className="mt-0.5 size-5 shrink-0 accent-primary"
+              />
+              If I'm under 18, my parent or guardian knows I'm volunteering and
+              agrees.
+            </label>
+          </div>
+
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          <div className="flex flex-col gap-2">
+            <Button
+              type="submit"
+              disabled={
+                loading || !studentCode.trim() || !ageConfirmed || !guardianAck
+              }
+            >
+              {loading ? "Checking..." : "Join"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setError(null);
+                setStep("choose");
+              }}
+              disabled={loading}
+            >
+              <IconArrowLeft />
+              Back
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {step === "student-joined" && joinedCaregiver && (
+        <>
+          <div className="flex flex-col gap-2 text-center">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Welcome aboard
+            </h1>
+            <p className="text-muted-foreground">
+              You've joined {joinedCaregiver}'s community. They'll choose who
+              you can help, and you can add the skills you'd like to teach.
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              router.push("/student");
+              router.refresh();
+            }}
+          >
+            Continue to my dashboard
+          </Button>
         </>
       )}
 

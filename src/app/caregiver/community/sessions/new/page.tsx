@@ -1,0 +1,80 @@
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { SessionForm } from "~/components/community/session-form";
+import { BackLink } from "~/components/community/session-parts";
+import { Card, CardContent } from "~/components/ui/card";
+import { env } from "~/env";
+import { PLANNED_MINUTES } from "~/lib/community";
+import { createClient } from "~/lib/supabase/server";
+import type { Connection } from "~/lib/types";
+
+export const metadata: Metadata = { title: "Plan a session" };
+
+export default async function NewCaregiverSessionPage() {
+  if (!env.NEXT_PUBLIC_COMMUNITY_ENABLED) notFound();
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const caregiverId = claimsData?.claims.sub;
+  if (!caregiverId) redirect("/login");
+
+  const [{ data: memberRows }, { data: connections }] = await Promise.all([
+    supabase
+      .from("community_members")
+      .select("student_id, student_profiles(display_name)")
+      .eq("caregiver_id", caregiverId)
+      .eq("status", "active")
+      .order("joined_at", { ascending: true }),
+    supabase.rpc("get_my_connections"),
+  ]);
+
+  const students = (
+    (memberRows as unknown as
+      | {
+          student_id: string;
+          student_profiles: { display_name: string } | null;
+        }[]
+      | null) ?? []
+  ).map((m) => ({
+    id: m.student_id,
+    name: m.student_profiles?.display_name ?? "Student",
+  }));
+  const learners = ((connections as Connection[] | null) ?? [])
+    .filter((c) => c.partner_role === "care_recipient")
+    .map((c) => ({ id: c.partner_id, name: c.partner_full_name || "Learner" }));
+
+  return (
+    <div className="flex max-w-2xl flex-col gap-6">
+      <div className="flex flex-col gap-3">
+        <BackLink href="/caregiver/community">Back to Community</BackLink>
+        <h1 className="text-xl font-semibold">Plan a session</h1>
+        <p className="text-sm text-muted-foreground">
+          Choose who will learn together, and when. Sessions are{" "}
+          {PLANNED_MINUTES} minutes for now; the real time given is recorded
+          afterwards.
+        </p>
+      </div>
+
+      {students.length === 0 || learners.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center text-muted-foreground">
+            {students.length === 0
+              ? "Invite a student volunteer first, from the Community page."
+              : "Connect with the person you support first, from Manage Connection."}
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="py-6">
+            <SessionForm
+              mode="caregiver"
+              students={students}
+              learners={learners}
+              sessionsPath="/caregiver/community/sessions"
+            />
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

@@ -18,12 +18,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { ROLE_LABELS, type Role } from "~/lib/roles";
 import { cn } from "~/lib/utils";
 
 export type Account = {
   email: string;
   fullName: string | null;
-  role: "caregiver" | "care_recipient" | null;
+  role: Role | null;
   isAdmin: boolean;
 };
 
@@ -96,11 +97,6 @@ function menuLinks(account: Account): MenuLink[] {
   }
   return links;
 }
-
-const ROLE_LABELS = {
-  caregiver: "Caregiver",
-  care_recipient: "Learner",
-} as const;
 
 export function AccountMenu({
   account,

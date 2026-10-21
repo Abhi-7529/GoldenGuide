@@ -7,6 +7,7 @@ import { GoogleSignInButton } from "~/components/google-sign-in-button";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { homeForRole } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/client";
 
 export default function LoginPage() {
@@ -56,13 +57,7 @@ export default function LoginPage() {
 
     setLoading(false);
 
-    router.push(
-      !profile
-        ? "/onboarding"
-        : profile.role === "caregiver"
-          ? "/caregiver"
-          : "/home",
-    );
+    router.push(homeForRole(profile?.role));
     router.refresh();
   }
 
