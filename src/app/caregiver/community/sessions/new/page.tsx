@@ -4,7 +4,7 @@ import { SessionForm } from "~/components/community/session-form";
 import { BackLink } from "~/components/community/session-parts";
 import { Card, CardContent } from "~/components/ui/card";
 import { env } from "~/env";
-import { PLANNED_MINUTES } from "~/lib/community";
+import { isCleared, PLANNED_MINUTES } from "~/lib/community";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 
@@ -21,7 +21,9 @@ export default async function NewCaregiverSessionPage() {
   const [{ data: memberRows }, { data: connections }] = await Promise.all([
     supabase
       .from("community_members")
-      .select("student_id, student_profiles(display_name)")
+      .select(
+        "student_id, student_profiles(display_name, age_group, guardian_status)",
+      )
       .eq("caregiver_id", caregiverId)
       .eq("status", "active")
       .order("joined_at", { ascending: true }),
@@ -32,13 +34,20 @@ export default async function NewCaregiverSessionPage() {
     (memberRows as unknown as
       | {
           student_id: string;
-          student_profiles: { display_name: string } | null;
+          student_profiles: {
+            display_name: string;
+            age_group: string | null;
+            guardian_status: string;
+          } | null;
         }[]
       | null) ?? []
-  ).map((m) => ({
-    id: m.student_id,
-    name: m.student_profiles?.display_name ?? "Student",
-  }));
+  )
+    // Students waiting for a parent's approval can't be in sessions yet.
+    .filter((m) => m.student_profiles && isCleared(m.student_profiles))
+    .map((m) => ({
+      id: m.student_id,
+      name: m.student_profiles?.display_name ?? "Student",
+    }));
   const learners = ((connections as Connection[] | null) ?? [])
     .filter((c) => c.partner_role === "care_recipient")
     .map((c) => ({ id: c.partner_id, name: c.partner_full_name || "Learner" }));
@@ -59,7 +68,7 @@ export default async function NewCaregiverSessionPage() {
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
             {students.length === 0
-              ? "Invite a student volunteer first, from the Community page."
+              ? "Invite a student volunteer first, from the Community page. Students under 18 also need a parent or guardian's approval."
               : "Connect with the person you support first, from Manage Connection."}
           </CardContent>
         </Card>

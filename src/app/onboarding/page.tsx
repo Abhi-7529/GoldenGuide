@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useState } from "react";
+import { requestGuardianApproval } from "~/app/student/guardian-actions";
 import {
   IconArrowLeft,
   IconBook,
@@ -27,6 +28,14 @@ import { homeForRole, type Role } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/client";
 import { cn } from "~/lib/utils";
 
+type AgeGroup = "under_16" | "16_17" | "18_plus";
+
+const AGE_OPTIONS: { value: AgeGroup; label: string }[] = [
+  { value: "under_16", label: "Under 16" },
+  { value: "16_17", label: "16 or 17" },
+  { value: "18_plus", label: "18 or older" },
+];
+
 type Step =
   | "checking"
   | "choose"
@@ -49,9 +58,11 @@ export default function OnboardingPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [studentCode, setStudentCode] = useState("");
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [guardianAck, setGuardianAck] = useState(false);
+  const [ageGroup, setAgeGroup] = useState<AgeGroup | null>(null);
+  const [parentEmail, setParentEmail] = useState("");
   const [joinedCaregiver, setJoinedCaregiver] = useState<string | null>(null);
+  // For 16- and 17-year-olds: whether the parent's email went out.
+  const [guardianNote, setGuardianNote] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -187,21 +198,30 @@ export default function OnboardingPage() {
       {
         p_code: studentCode,
         p_display_name: fullName.trim(),
-        p_age_confirmed: ageConfirmed,
-        p_guardian_ack: guardianAck,
+        p_age_group: ageGroup,
         p_time_zone: deviceTimeZone(),
       },
     );
-    setLoading(false);
     const result = data as RedeemResult | null;
     if (rpcError || !result) {
+      setLoading(false);
       setError(rpcError?.message ?? "Something went wrong. Please try again.");
       return;
     }
     if (!result.ok) {
+      setLoading(false);
       setError(result.error);
       return;
     }
+    if (result.needs_guardian) {
+      const sent = await requestGuardianApproval(parentEmail);
+      setGuardianNote(
+        sent.ok
+          ? `We emailed ${parentEmail.trim()} to ask for their approval. You can start helping once they say yes.`
+          : `${sent.error} You can send it again from your dashboard.`,
+      );
+    }
+    setLoading(false);
     setJoinedCaregiver(result.caregiver_name);
     setStep("student-joined");
   }
@@ -330,27 +350,52 @@ export default function OnboardingPage() {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3">
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                checked={ageConfirmed}
-                onChange={(e) => setAgeConfirmed(e.target.checked)}
-                className="mt-0.5 size-5 shrink-0 accent-primary"
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-sm font-medium">
+              How old are you?
+            </legend>
+            {AGE_OPTIONS.map((option) => (
+              <label
+                key={option.value}
+                className="flex w-fit items-center gap-3 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="ageGroup"
+                  value={option.value}
+                  checked={ageGroup === option.value}
+                  onChange={() => setAgeGroup(option.value)}
+                  className="size-5 shrink-0 accent-primary"
+                />
+                {option.label}
+              </label>
+            ))}
+          </fieldset>
+
+          {ageGroup === "under_16" && (
+            <p className="rounded-xl border border-border bg-accent/40 p-3 text-sm">
+              Student volunteers need to be 16 or older. Thank you for wanting
+              to help! You're welcome to come back when you're 16.
+            </p>
+          )}
+
+          {ageGroup === "16_17" && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="parentEmail">Parent or guardian's email</Label>
+              <Input
+                id="parentEmail"
+                type="email"
+                value={parentEmail}
+                onChange={(e) => setParentEmail(e.target.value)}
+                autoComplete="off"
+                required
               />
-              I'm 13 or older.
-            </label>
-            <label className="flex items-start gap-3 text-sm">
-              <input
-                type="checkbox"
-                checked={guardianAck}
-                onChange={(e) => setGuardianAck(e.target.checked)}
-                className="mt-0.5 size-5 shrink-0 accent-primary"
-              />
-              If I'm under 18, my parent or guardian knows I'm volunteering and
-              agrees.
-            </label>
-          </div>
+              <p className="text-sm text-muted-foreground">
+                We'll email them to approve you. You can join now, and start
+                helping once they say yes.
+              </p>
+            </div>
+          )}
 
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -362,7 +407,11 @@ export default function OnboardingPage() {
             <Button
               type="submit"
               disabled={
-                loading || !studentCode.trim() || !ageConfirmed || !guardianAck
+                loading ||
+                !studentCode.trim() ||
+                !ageGroup ||
+                ageGroup === "under_16" ||
+                (ageGroup === "16_17" && !parentEmail.trim())
               }
             >
               {loading ? "Checking..." : "Join"}
@@ -394,6 +443,11 @@ export default function OnboardingPage() {
               you can help, and you can add the skills you'd like to teach.
             </p>
           </div>
+          {guardianNote && (
+            <p className="rounded-xl border border-border bg-accent/40 p-3 text-sm">
+              {guardianNote}
+            </p>
+          )}
           <Button
             onClick={() => {
               router.push("/student");

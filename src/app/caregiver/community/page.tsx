@@ -8,11 +8,13 @@ import { IconPlus } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { env } from "~/env";
-import type {
-  CommunityLearner,
-  CommunityStudent,
-  Invitation,
-  StudentSkill,
+import {
+  type CommunityLearner,
+  type CommunityStudent,
+  type GuardianStatus,
+  type Invitation,
+  isCleared,
+  type StudentSkill,
 } from "~/lib/community";
 import { loadSessions, loadTimeZone } from "~/lib/community-data";
 import { createClient } from "~/lib/supabase/server";
@@ -30,6 +32,8 @@ type MemberRow = {
     intro: string;
     availability: string;
     interests: string;
+    age_group: string | null;
+    guardian_status: GuardianStatus;
     student_skills: StudentSkill[];
   } | null;
 };
@@ -63,7 +67,7 @@ export default async function CaregiverCommunityPage() {
     supabase
       .from("community_members")
       .select(
-        "student_id, status, joined_at, removed_at, student_profiles(display_name, intro, availability, interests, student_skills(id, category, title, description))",
+        "student_id, status, joined_at, removed_at, student_profiles(display_name, intro, availability, interests, age_group, guardian_status, student_skills(id, category, title, description))",
       )
       .eq("caregiver_id", caregiverId)
       .order("joined_at", { ascending: true }),
@@ -115,6 +119,8 @@ export default async function CaregiverCommunityPage() {
     interests: m.student_profiles?.interests ?? "",
     skills: m.student_profiles?.student_skills ?? [],
     learner_ids: accessByStudent.get(m.student_id) ?? [],
+    cleared: m.student_profiles ? isCleared(m.student_profiles) : false,
+    guardian_status: m.student_profiles?.guardian_status ?? "not_needed",
   }));
   const active = students.filter((s) => s.status === "active");
   const pastStudents = students.filter((s) => s.status === "removed");
@@ -136,7 +142,7 @@ export default async function CaregiverCommunityPage() {
       <section className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold">Sessions</h2>
-          {active.length > 0 && learners.length > 0 && (
+          {active.some((s) => s.cleared) && learners.length > 0 && (
             <Button asChild size="sm">
               <Link href="/caregiver/community/sessions/new">
                 <IconPlus />

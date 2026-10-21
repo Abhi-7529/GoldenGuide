@@ -1,5 +1,6 @@
 -- Permission tests for the Community Skill Exchange
--- (migration 20261021030818_community_skill_exchange).
+-- (migrations 20261021030818_community_skill_exchange and
+-- 20261021050306_community_safety_rules).
 --
 -- Runs inside one transaction that is rolled back at the end, so it leaves
 -- no data behind. It makes throwaway users and acts as each of them through
@@ -176,10 +177,10 @@ select pg_temp.err('2 joining a community directly is refused',
   pg_temp.run('c0000000-0000-4000-8000-0000000005e3', $q$insert into public.community_members (caregiver_id, student_id) values ('c0000000-0000-4000-8000-00000000000a', 'c0000000-0000-4000-8000-0000000005e3') returning id::text$q$),
   'row-level security');
 select pg_temp.err('2 signed-out visitors can''t call the redeem RPC',
-  pg_temp.run(null, $q$select public.redeem_student_invitation('AAAAA-AAAAA', 'X', true, true, null)::text$q$),
+  pg_temp.run(null, $q$select public.redeem_student_invitation('AAAAA-AAAAA', 'X', '18_plus', null)::text$q$),
   'permission denied');
 select pg_temp.eq('2 a made-up code is refused',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', $q$select (public.redeem_student_invitation('ZZZZZ-ZZZZZ', 'Sam', true, true, 'America/Chicago') ->> 'ok')$q$),
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', $q$select (public.redeem_student_invitation('ZZZZZ-ZZZZZ', 'Sam', '18_plus', 'America/Chicago') ->> 'ok')$q$),
   'false');
 select pg_temp.eq('2 ...and no profile was created',
   (select count(*)::text from public.profiles where id = 'c0000000-0000-4000-8000-0000000005e3'), '0');
@@ -189,7 +190,7 @@ select pg_temp.eq('2 ...and no profile was created',
 -- ---------------------------------------------------------------------------
 update public.community_invitations set expires_at = now() - interval '1 minute' where id = pg_temp.sid('A3');
 select pg_temp.eq('3 an expired code is refused',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', true, true, null) ->> 'ok')$q$, (select code from t_ids where name = 'A3'))),
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', '18_plus', null) ->> 'ok')$q$, (select code from t_ids where name = 'A3'))),
   'false');
 
 select pg_temp.err('3 Bob can''t cancel Alice''s code',
@@ -198,20 +199,23 @@ select pg_temp.err('3 Bob can''t cancel Alice''s code',
 select pg_temp.ok('3 Alice cancels her code',
   pg_temp.run('c0000000-0000-4000-8000-00000000000a', format($q$select public.revoke_student_invitation(%L)::text$q$, pg_temp.sid('A4'))));
 select pg_temp.eq('3 a canceled code is refused',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', true, true, null) ->> 'ok')$q$, (select code from t_ids where name = 'A4'))),
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', '18_plus', null) ->> 'ok')$q$, (select code from t_ids where name = 'A4'))),
   'false');
 
-select pg_temp.eq('3 both consent boxes are required',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', false, true, null) ->> 'error')$q$, (select code from t_ids where name = 'A2'))),
-  'Please confirm both boxes to continue.');
+select pg_temp.eq('3 students under 16 (no age group) are refused',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', null, null) ->> 'error')$q$, (select code from t_ids where name = 'A2'))),
+  'Student volunteers need to be 16 or older.');
+select pg_temp.eq('3 a made-up age group is refused',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e3', format($q$select (public.redeem_student_invitation(%L, 'Sam', '13_15', null) ->> 'ok')$q$, (select code from t_ids where name = 'A2'))),
+  'false');
 
 -- ---------------------------------------------------------------------------
 -- 4. a valid code links the student to the right community
 -- ---------------------------------------------------------------------------
 select pg_temp.eq('4 Sky redeems Alice''s code (lower case, spaces)',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e1', format($q$select public.redeem_student_invitation(%L, 'Sky Student', true, true, 'America/Chicago')::text$q$,
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e1', format($q$select public.redeem_student_invitation(%L, 'Sky Student', '18_plus', 'America/Chicago')::text$q$,
     ' ' || lower(replace((select code from t_ids where name = 'A1'), '-', ' ')) || ' ')),
-  '{"ok": true, "caregiver_name": "Alice"}');
+  '{"ok": true, "caregiver_name": "Alice", "needs_guardian": false}');
 select pg_temp.eq('4 Sky is now a student',
   (select role from public.profiles where id = 'c0000000-0000-4000-8000-0000000005e1'), 'student');
 select pg_temp.eq('4 Sky is an active member of Alice''s community only',
@@ -220,10 +224,10 @@ select pg_temp.eq('4 Sky is an active member of Alice''s community only',
 select pg_temp.check('4 the code is used up by Sky',
   (select consumed_by = 'c0000000-0000-4000-8000-0000000005e1' and consumed_at is not null from public.community_invitations where id = pg_temp.sid('A1')));
 select pg_temp.eq('3 a used code is refused',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e2', format($q$select (public.redeem_student_invitation(%L, 'Sid', true, true, null) ->> 'ok')$q$, (select code from t_ids where name = 'A1'))),
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e2', format($q$select (public.redeem_student_invitation(%L, 'Sid', '16_17', null) ->> 'ok')$q$, (select code from t_ids where name = 'A1'))),
   'false');
-select pg_temp.eq('4 Sid redeems Bob''s code',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e2', format($q$select (public.redeem_student_invitation(%L, 'Sid Student', true, true, null) ->> 'ok')$q$, (select code from t_ids where name = 'B1'))),
+select pg_temp.eq('4 Sid (16 or 17) redeems Bob''s code and needs a parent''s approval',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e2', format($q$select (public.redeem_student_invitation(%L, 'Sid Student', '16_17', null) ->> 'needs_guardian')$q$, (select code from t_ids where name = 'B1'))),
   'true');
 
 select pg_temp.eq('4 a learner can''t turn into a student',
@@ -239,14 +243,57 @@ select pg_temp.check('4 ...and none of those used up code A2',
   (select consumed_at is null from public.community_invitations where id = pg_temp.sid('A2')));
 
 -- rate limiting: 5 wrong codes in an hour, then even a good code waits
-select pg_temp.run('c0000000-0000-4000-8000-0000000005e4', format($q$select public.redeem_student_invitation(%L, 'Max', true, true, null)::text$q$, 'WRONG-COD' || g))
+select pg_temp.run('c0000000-0000-4000-8000-0000000005e4', format($q$select public.redeem_student_invitation(%L, 'Max', '18_plus', null)::text$q$, 'WRONG-COD' || g))
 from generate_series(1, 5) g;
 select pg_temp.check('4 after 5 wrong codes, a good code is held back',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e4', format($q$select (public.redeem_student_invitation(%L, 'Max', true, true, null) ->> 'error')$q$, (select code from t_ids where name = 'A2'))) like 'Too many tries%');
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e4', format($q$select (public.redeem_student_invitation(%L, 'Max', '18_plus', null) ->> 'error')$q$, (select code from t_ids where name = 'A2'))) like 'Too many tries%');
 select pg_temp.check('4 ...and code A2 is still unused',
   (select consumed_at is null from public.community_invitations where id = pg_temp.sid('A2')));
 select pg_temp.eq('4 nobody can read the attempt log',
   pg_temp.run('c0000000-0000-4000-8000-0000000005e4', $q$select count(*)::text from public.invitation_attempts$q$), '0');
+
+-- ---------------------------------------------------------------------------
+-- parent or guardian approval (Sid is 16 or 17)
+-- ---------------------------------------------------------------------------
+select pg_temp.check('G only the server can make approval links',
+  not has_function_privilege('authenticated', 'public.create_guardian_consent(uuid, text)', 'execute')
+  and not has_function_privilege('anon', 'public.create_guardian_consent(uuid, text)', 'execute')
+  and has_function_privilege('service_role', 'public.create_guardian_consent(uuid, text)', 'execute'));
+select pg_temp.err('G Sid can''t make his own approval link',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e2', $q$select public.create_guardian_consent('c0000000-0000-4000-8000-0000000005e2', 'parent@example.invalid')$q$),
+  'permission denied');
+insert into t_ids (name, code)
+select 'G1', public.create_guardian_consent('c0000000-0000-4000-8000-0000000005e2', 'Parent@Example.invalid');
+select pg_temp.eq('G Sid is waiting; caregivers see the status but not the parent''s email',
+  (select guardian_status from public.student_profiles where id = 'c0000000-0000-4000-8000-0000000005e2')
+  || '/' || pg_temp.run('c0000000-0000-4000-8000-00000000000b', $q$select count(*)::text from public.guardian_consents$q$)
+  || '/' || pg_temp.run('c0000000-0000-4000-8000-0000000005e2', $q$select guardian_email from public.guardian_consents$q$),
+  'pending/0/parent@example.invalid');
+select pg_temp.err('G Bob can''t let Sid help anyone before approval',
+  pg_temp.run('c0000000-0000-4000-8000-00000000000b', $q$select public.set_student_learner_access('c0000000-0000-4000-8000-0000000005e2', 'c0000000-0000-4000-8000-0000000000b1', true)::text$q$),
+  'waiting for a parent');
+select pg_temp.err('G Bob can''t plan a session with Sid before approval',
+  pg_temp.run('c0000000-0000-4000-8000-00000000000b', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e2', 'c0000000-0000-4000-8000-0000000000b1', 'Email', '', 'remote', '', now() + interval '2 days', 30)::text$q$),
+  'waiting for a parent');
+select pg_temp.eq('G the parent''s link shows Sid''s name',
+  pg_temp.run(null, format($q$select public.guardian_consent_preview(%L)::text$q$, (select code from t_ids where name = 'G1'))),
+  '{"state": "open", "decision": null, "student_name": "Sid Student"}');
+select pg_temp.eq('G a made-up link shows nothing',
+  pg_temp.run(null, $q$select public.guardian_consent_preview('not-a-real-token')::text$q$),
+  '{"state": "invalid"}');
+select pg_temp.eq('G approving needs the parent''s name',
+  pg_temp.run(null, format($q$select (public.guardian_consent_respond(%L, true, '  ') ->> 'error')$q$, (select code from t_ids where name = 'G1'))),
+  'Please type your full name to approve.');
+select pg_temp.eq('G the parent approves',
+  pg_temp.run(null, format($q$select (public.guardian_consent_respond(%L, true, 'Pat Parent') ->> 'ok')$q$, (select code from t_ids where name = 'G1'))),
+  'true');
+select pg_temp.eq('G the link only works once',
+  pg_temp.run(null, format($q$select (public.guardian_consent_respond(%L, false, '') ->> 'ok')$q$, (select code from t_ids where name = 'G1'))),
+  'false');
+select pg_temp.eq('G Sid is approved',
+  (select guardian_status from public.student_profiles where id = 'c0000000-0000-4000-8000-0000000005e2'), 'approved');
+select pg_temp.ok('G now Bob can let Sid help Lee',
+  pg_temp.run('c0000000-0000-4000-8000-00000000000b', $q$select public.set_student_learner_access('c0000000-0000-4000-8000-0000000005e2', 'c0000000-0000-4000-8000-0000000000b1', true)::text$q$));
 
 -- ---------------------------------------------------------------------------
 -- 5. students only see their own communities
@@ -329,14 +376,17 @@ select pg_temp.ok('7 Alice approves',
 select pg_temp.eq('7 ...and it is scheduled',
   (select status from public.community_sessions where id = pg_temp.sid('S1')), 'scheduled');
 
-select pg_temp.err('7 in-person sessions need a supervising adult',
-  pg_temp.run('c0000000-0000-4000-8000-00000000000a', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e1', 'c0000000-0000-4000-8000-0000000000a2', 'Baking', '', 'supervised_in_person', '', now() + interval '3 days', 30, false)::text$q$),
-  'trusted adult');
+select pg_temp.err('7 in-person sessions aren''t available yet',
+  pg_temp.run('c0000000-0000-4000-8000-00000000000a', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e1', 'c0000000-0000-4000-8000-0000000000a2', 'Baking', '', 'supervised_in_person', '', now() + interval '3 days', 30, true)::text$q$),
+  'In-person sessions aren''t available');
+select pg_temp.err('7 ...not even when a student asks',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e1', $q$select public.student_request_session('c0000000-0000-4000-8000-0000000000a1', 'Baking', '', 'supervised_in_person', now() + interval '3 days', 30)::text$q$),
+  'In-person sessions aren''t available');
 select pg_temp.err('7 Alice can''t plan a session with Bob''s student',
   pg_temp.run('c0000000-0000-4000-8000-00000000000a', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e2', 'c0000000-0000-4000-8000-0000000000a1', 'Baking', '', 'remote', '', now() + interval '3 days', 30)::text$q$),
   'isn''t in your community');
 insert into t_ids (name, id)
-select 'S2', pg_temp.run('c0000000-0000-4000-8000-00000000000a', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e1', 'c0000000-0000-4000-8000-0000000000a2', 'Baking bread', '', 'supervised_in_person', 'At the community center', now() + interval '3 days', 30, true)::text$q$)::uuid;
+select 'S2', pg_temp.run('c0000000-0000-4000-8000-00000000000a', $q$select public.caregiver_create_session('c0000000-0000-4000-8000-0000000005e1', 'c0000000-0000-4000-8000-0000000000a2', 'Baking bread', '', 'remote', 'Video call', now() + interval '3 days', 30)::text$q$)::uuid;
 select pg_temp.eq('7 Alice''s session waits for Sky',
   (select status from public.community_sessions where id = pg_temp.sid('S2')), 'invited');
 select pg_temp.ok('7 Sky accepts',

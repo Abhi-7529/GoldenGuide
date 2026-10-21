@@ -18,6 +18,15 @@ export const env = createEnv({
     // Vercel sends this with its scheduled (cron) requests. Use a long
     // random value; without it the cron endpoint stays switched off.
     CRON_SECRET: z.string().min(1).optional(),
+    // Sends app emails, like parent approval requests for student
+    // volunteers, through Resend. Without it, those emails are printed to
+    // the server log in development and fail in production.
+    RESEND_API_KEY: z.string().startsWith("re_").optional(),
+    // The sender for app emails; its domain must be verified in Resend.
+    EMAIL_FROM: z
+      .string()
+      .min(3)
+      .default("GoldenGuide <no-reply@goldenguidefinance.com>"),
   },
   client: {
     NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
@@ -49,6 +58,8 @@ export const env = createEnv({
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     CRON_SECRET: process.env.CRON_SECRET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
   },
   skipValidation: !!process.env.SKIP_ENV_VALIDATION,
   emptyStringAsUndefined: true,

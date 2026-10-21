@@ -7,11 +7,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  FORMAT_LABELS,
-  PLANNED_MINUTES,
-  type SessionFormat,
-} from "~/lib/community";
+import { PLANNED_MINUTES } from "~/lib/community";
 import { createClient } from "~/lib/supabase/client";
 
 type Option = { id: string; name: string };
@@ -57,10 +53,8 @@ export function SessionForm(
   );
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
-  const [format, setFormat] = useState<SessionFormat>("remote");
   const [joinDetails, setJoinDetails] = useState("");
   const [when, setWhen] = useState("");
-  const [supervised, setSupervised] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -81,17 +75,16 @@ export function SessionForm(
             p_learner: learnerId,
             p_topic: topic,
             p_description: description,
-            p_format: format,
+            p_format: "remote",
             p_join_details: joinDetails,
             p_scheduled_at: scheduledAt.toISOString(),
             p_planned_minutes: PLANNED_MINUTES,
-            p_supervision_confirmed: supervised,
           })
         : await supabase.rpc("student_request_session", {
             p_learner: learnerId,
             p_topic: topic,
             p_description: description,
-            p_format: format,
+            p_format: "remote",
             p_scheduled_at: scheduledAt.toISOString(),
             p_planned_minutes: PLANNED_MINUTES,
           });
@@ -210,43 +203,10 @@ export function SessionForm(
         </div>
       </div>
 
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-2 text-sm font-medium">
-          How will it happen?
-        </legend>
-        {(Object.keys(FORMAT_LABELS) as SessionFormat[]).map((value) => (
-          <label key={value} className="flex w-fit items-center gap-3 text-sm">
-            <input
-              type="radio"
-              name="format"
-              value={value}
-              checked={format === value}
-              onChange={() => setFormat(value)}
-              className="size-5 shrink-0 accent-primary"
-            />
-            {FORMAT_LABELS[value]}
-          </label>
-        ))}
-        {format === "supervised_in_person" && props.mode === "caregiver" && (
-          <label className="mt-1 flex items-start gap-3 rounded-xl border border-border bg-accent/40 p-3 text-sm">
-            <input
-              type="checkbox"
-              checked={supervised}
-              onChange={(e) => setSupervised(e.target.checked)}
-              className="mt-0.5 size-5 shrink-0 accent-primary"
-              required
-            />
-            A trusted adult will be there for the whole session, somewhere
-            public or familiar (not a student alone in someone's home).
-          </label>
-        )}
-        {format === "supervised_in_person" && props.mode === "student" && (
-          <p className="text-sm text-muted-foreground">
-            The caregiver will decide where, and make sure a trusted adult is
-            there.
-          </p>
-        )}
-      </fieldset>
+      <p className="text-sm text-muted-foreground">
+        Sessions are by video or phone call for now. Plan how to connect, and
+        never share home addresses or meet in person.
+      </p>
 
       {props.mode === "caregiver" && (
         <div className="flex flex-col gap-1.5">

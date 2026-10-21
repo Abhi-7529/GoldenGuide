@@ -15,8 +15,11 @@ export type StudentCommunity = {
 
 /** The result of redeem_student_invitation(). */
 export type RedeemResult =
-  | { ok: true; caregiver_name: string }
+  | { ok: true; caregiver_name: string; needs_guardian?: boolean }
   | { ok: false; error: string };
+
+/** Whether a parent or guardian has approved a 16- or 17-year-old. */
+export type GuardianStatus = "not_needed" | "pending" | "approved" | "declined";
 
 /** Invitation codes are shown as XXXXX-XXXXX; people may type them any way. */
 export const INVITATION_CODE_PLACEHOLDER = "e.g. HA2PY-D7SH4";
@@ -75,7 +78,20 @@ export type CommunityStudent = {
   skills: StudentSkill[];
   /** Learners this student may work with. */
   learner_ids: string[];
+  /** 18 or older, or approved by a parent or guardian. */
+  cleared: boolean;
+  guardian_status: GuardianStatus;
 };
+
+/** Mirrors the database's student_cleared(). */
+export function isCleared(profile: {
+  age_group: string | null;
+  guardian_status: string;
+}) {
+  return (
+    profile.age_group === "18_plus" || profile.guardian_status === "approved"
+  );
+}
 
 /** A learner connected to the caregiver. */
 export type CommunityLearner = { id: string; name: string };

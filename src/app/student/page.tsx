@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SessionList, SessionRow } from "~/components/community/session-parts";
+import { GuardianStatusCard } from "~/components/student/guardian-status-card";
 import { JoinCommunityForm } from "~/components/student/join-community-form";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import {
   formatHours,
+  type GuardianStatus,
   hasStarted,
   type StudentCommunity,
   summarizeHours,
@@ -25,17 +27,33 @@ export default async function StudentOverviewPage() {
     redirect("/login");
   }
 
-  const [{ data: profile }, { data: communityData }, sessions, timeZone] =
-    await Promise.all([
-      supabase
-        .from("student_profiles")
-        .select("display_name")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabase.rpc("my_student_communities"),
-      loadSessions(supabase),
-      loadTimeZone(supabase, userId),
-    ]);
+  const [
+    { data: profile },
+    { data: communityData },
+    sessions,
+    timeZone,
+    { data: lastConsent },
+  ] = await Promise.all([
+    supabase
+      .from("student_profiles")
+      .select("display_name, age_group, guardian_status")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabase.rpc("my_student_communities"),
+    loadSessions(supabase),
+    loadTimeZone(supabase, userId),
+    supabase
+      .from("guardian_consents")
+      .select("guardian_email")
+      .eq("student_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  const guardianStatus = profile?.guardian_status as GuardianStatus | undefined;
+  const needsGuardian =
+    profile?.age_group === "16_17" &&
+    (guardianStatus === "pending" || guardianStatus === "declined");
   const mine = sessions.filter((s) => s.student_id === userId);
   const hours = summarizeHours(mine);
   const needsYou = mine.filter(
@@ -76,6 +94,15 @@ export default async function StudentOverviewPage() {
           appear here.
         </p>
       </div>
+
+      {needsGuardian && guardianStatus && (
+        <GuardianStatusCard
+          status={guardianStatus}
+          lastEmail={
+            (lastConsent?.guardian_email as string | undefined) ?? null
+          }
+        />
+      )}
 
       <Link
         href="/student/hours"
