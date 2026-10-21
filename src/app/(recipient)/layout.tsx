@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { RecipientSidebar, RecipientTabs } from "~/components/recipient/tabs";
 import { TimeZoneSync } from "~/components/time-zone-sync";
+import { homeForRole } from "~/lib/roles";
 import { refreshLapsedMemberships } from "~/lib/stripe";
 import { createClient } from "~/lib/supabase/server";
 
@@ -28,7 +29,7 @@ export default async function RecipientLayout({
   }
 
   if (profile.role !== "care_recipient") {
-    redirect("/caregiver");
+    redirect(homeForRole(profile.role));
   }
 
   const { data: connections } = await supabase.rpc("get_my_connections");

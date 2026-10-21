@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { homeForRole } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/server";
 
 // Sends signed-in people to their own dashboard (used by the header logo),
@@ -18,11 +19,5 @@ export default async function DashboardPage() {
     .eq("id", userId)
     .maybeSingle();
 
-  redirect(
-    !profile
-      ? "/onboarding"
-      : profile.role === "caregiver"
-        ? "/caregiver"
-        : "/home",
-  );
+  redirect(homeForRole(profile?.role));
 }

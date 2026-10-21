@@ -10,6 +10,7 @@
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "ai:check": "tsx scripts/ai-gateway-check.ts",
+    "community:seed": "tsx scripts/community-dev-seed.ts",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {

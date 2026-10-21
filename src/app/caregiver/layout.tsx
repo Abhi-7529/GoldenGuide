@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { CaregiverSidebar, CaregiverTabs } from "~/components/caregiver/tabs";
 import { TimeZoneSync } from "~/components/time-zone-sync";
+import { homeForRole } from "~/lib/roles";
 import { refreshLapsedMemberships } from "~/lib/stripe";
 import { createClient } from "~/lib/supabase/server";
 
@@ -27,7 +28,7 @@ export default async function CaregiverLayout({
   }
 
   if (profile.role !== "caregiver") {
-    redirect("/home");
+    redirect(homeForRole(profile.role));
   }
 
   await refreshLapsedMemberships([userData.user.id]);

@@ -8,6 +8,7 @@ import { NameForm } from "~/components/account/name-form";
 import { Avatar } from "~/components/account-menu";
 import { ConnectCaregiverCard } from "~/components/recipient/connect-caregiver-card";
 import { Button } from "~/components/ui/button";
+import { ROLE_LABELS, type Role } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 
@@ -55,7 +56,7 @@ export default async function AccountPage() {
             {profile.full_name || email}
           </p>
           <p className="text-base text-muted-foreground">
-            {isLearner ? "Learner" : "Caregiver"} · Member since{" "}
+            {ROLE_LABELS[profile.role as Role] ?? "Member"} · Member since{" "}
             {new Date(data.user.created_at).toLocaleDateString("en-US", {
               month: "long",
               year: "numeric",
@@ -95,6 +96,15 @@ export default async function AccountPage() {
         ) : (
           <ConnectCaregiverCard />
         )
+      ) : profile.role === "student" ? (
+        <Section
+          title="Families you volunteer with"
+          description="See your communities, or join another family with a new invitation code."
+        >
+          <Button asChild size="lg" variant="outline" className="w-fit">
+            <Link href="/student">Go to my volunteer dashboard</Link>
+          </Button>
+        </Section>
       ) : (
         <Section
           title="People you support"

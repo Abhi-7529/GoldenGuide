@@ -7,13 +7,11 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Select } from "~/components/ui/select";
+import { ROLE_LABELS } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/client";
 import type { AdminUser } from "~/lib/types";
 
-const roleLabels: Record<string, string> = {
-  care_recipient: "Learner",
-  caregiver: "Caregiver",
-};
+const roleLabels: Record<string, string> = ROLE_LABELS;
 
 function formatDate(value: string | null) {
   return value ? new Date(value).toLocaleDateString() : "Never";
@@ -111,6 +109,7 @@ export function UsersTable({
         >
           <option value="all">All users</option>
           <option value="care_recipient">Learners</option>
+          <option value="student">Students</option>
           <option value="caregiver">Caregivers</option>
           <option value="admin">Admins</option>
           <option value="none">Setup incomplete</option>

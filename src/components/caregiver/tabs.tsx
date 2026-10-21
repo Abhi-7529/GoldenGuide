@@ -5,11 +5,13 @@ import { usePathname } from "next/navigation";
 import { AppSidebar, isActive, type NavItem } from "~/components/app-sidebar";
 import {
   IconBarChart,
+  IconBook,
   IconCalculator,
   IconPiggyBank,
   IconTrendingUp,
   IconUsers,
 } from "~/components/icons";
+import { env } from "~/env";
 import { cn } from "~/lib/utils";
 
 const tabs: NavItem[] = [
@@ -20,6 +22,9 @@ const tabs: NavItem[] = [
   },
   { href: "/caregiver/activity", label: "Activity", icon: IconBarChart },
   { href: "/caregiver/budgets", label: "Budgets", icon: IconCalculator },
+  ...(env.NEXT_PUBLIC_COMMUNITY_ENABLED
+    ? [{ href: "/caregiver/community", label: "Community", icon: IconBook }]
+    : []),
   {
     href: "/caregiver/connection",
     label: "Manage Connection",

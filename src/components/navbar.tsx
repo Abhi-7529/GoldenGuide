@@ -101,7 +101,7 @@ export function Navbar({
   const showLinks = variant === "marketing";
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-card/90 backdrop-blur">
+    <nav className="sticky top-0 z-50 border-b print:hidden border-border bg-card/90 backdrop-blur">
       <div
         className={cn(
           "mx-auto flex h-16 items-center justify-between gap-3 px-4 sm:px-6",

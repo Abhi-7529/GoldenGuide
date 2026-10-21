@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { homeForRole } from "~/lib/roles";
 import { createClient } from "~/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -25,11 +26,7 @@ export async function GET(request: Request) {
         .eq("id", data.user.id)
         .maybeSingle();
 
-      const destination = !profile
-        ? "/onboarding"
-        : profile.role === "caregiver"
-          ? "/caregiver"
-          : "/home";
+      const destination = homeForRole(profile?.role);
 
       return NextResponse.redirect(`${origin}${destination}`);
     }

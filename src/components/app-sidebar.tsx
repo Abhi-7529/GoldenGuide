@@ -9,10 +9,12 @@ export type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  /** Only highlight on this exact page, not the pages below it. */
+  exact?: boolean;
 };
 
-export function isActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+export function isActive(pathname: string, href: string, exact = false) {
+  return pathname === href || (!exact && pathname.startsWith(`${href}/`));
 }
 
 /** Desktop side navigation. Pages show their own compact nav on small screens. */
@@ -28,10 +30,10 @@ export function AppSidebar({
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100vh-4rem)] w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-sidebar p-4 md:flex lg:w-72 lg:p-5">
+    <aside className="sticky top-16 hidden print:hidden! h-[calc(100vh-4rem)] w-60 shrink-0 flex-col gap-6 overflow-y-auto border-r border-border bg-sidebar p-4 md:flex lg:w-72 lg:p-5">
       <nav aria-label={label} className="flex flex-col gap-1.5">
         {items.map((item) => {
-          const active = isActive(pathname, item.href);
+          const active = isActive(pathname, item.href, item.exact);
           const Icon = item.icon;
           return (
             <Link
