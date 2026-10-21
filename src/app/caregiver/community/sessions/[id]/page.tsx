@@ -9,7 +9,7 @@ import {
 } from "~/components/community/session-parts";
 import { Card, CardContent } from "~/components/ui/card";
 import { env } from "~/env";
-import { NOTE_STATUSES } from "~/lib/community";
+import { hasStarted, NOTE_STATUSES } from "~/lib/community";
 import { loadSession, loadTimeZone } from "~/lib/community-data";
 import { createClient } from "~/lib/supabase/server";
 
@@ -40,7 +40,11 @@ export default async function CaregiverSessionPage({
         <BackLink href="/caregiver/community">Back to Community</BackLink>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-xl font-semibold">{session.topic}</h1>
-          <SessionStatusBadge status={session.status} viewer="caregiver" />
+          <SessionStatusBadge
+            status={session.status}
+            viewer="caregiver"
+            timePassed={hasStarted(session)}
+          />
         </div>
         {session.learner_response === "yes" && (
           <p className="text-sm text-muted-foreground">

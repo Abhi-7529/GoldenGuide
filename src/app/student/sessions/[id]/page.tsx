@@ -8,7 +8,7 @@ import {
 } from "~/components/community/session-parts";
 import { StudentSessionActions } from "~/components/community/student-session-actions";
 import { Card, CardContent } from "~/components/ui/card";
-import { NOTE_STATUSES } from "~/lib/community";
+import { hasStarted, NOTE_STATUSES } from "~/lib/community";
 import { loadSession, loadTimeZone } from "~/lib/community-data";
 import { createClient } from "~/lib/supabase/server";
 
@@ -41,7 +41,11 @@ export default async function StudentSessionPage({
         <BackLink href="/student/sessions">Back to My Sessions</BackLink>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-bold tracking-tight">{session.topic}</h1>
-          <SessionStatusBadge status={session.status} viewer="student" />
+          <SessionStatusBadge
+            status={session.status}
+            viewer="student"
+            timePassed={hasStarted(session)}
+          />
         </div>
         <p className="text-muted-foreground">
           With {session.learner_name}, in {caregiverFirst}'s family.

@@ -5,6 +5,7 @@ import {
   FORMAT_LABELS,
   formatMinutes,
   formatSessionTime,
+  hasStarted,
   type Session,
   type SessionEvent,
   type SessionStatus,
@@ -46,12 +47,29 @@ export type Viewer = "caregiver" | "student";
 export function SessionStatusBadge({
   status,
   viewer,
+  timePassed = false,
   className,
 }: {
   status: SessionStatus;
   viewer: Viewer;
+  /** The start time has gone by. */
+  timePassed?: boolean;
   className?: string;
 }) {
+  // An invitation or request nobody answered in time can't go ahead.
+  if (timePassed && (status === "invited" || status === "pending_approval")) {
+    return (
+      <span
+        className={cn(
+          "inline-flex w-fit items-center rounded-full px-2.5 py-0.5 text-xs font-semibold",
+          TONE_CLASSES.muted,
+          className,
+        )}
+      >
+        Time passed
+      </span>
+    );
+  }
   return (
     <span
       className={cn(
@@ -95,7 +113,11 @@ export function SessionRow({
         </span>
       </div>
       <div className="flex items-center gap-2">
-        <SessionStatusBadge status={session.status} viewer={viewer} />
+        <SessionStatusBadge
+          status={session.status}
+          viewer={viewer}
+          timePassed={hasStarted(session)}
+        />
         <IconArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
       </div>
     </Link>
