@@ -111,8 +111,7 @@ async function main() {
       {
         p_code: code,
         p_display_name: "Sky Student",
-        p_age_confirmed: true,
-        p_guardian_ack: true,
+        p_age_group: "18_plus",
         p_time_zone: "America/Chicago",
       },
     );

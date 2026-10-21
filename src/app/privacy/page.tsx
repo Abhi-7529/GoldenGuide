@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalContact } from "~/components/legal-contact";
 import { Prose, PublicPage } from "~/components/public-page";
+import { env } from "~/env";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -10,10 +11,13 @@ export const metadata: Metadata = {
 };
 
 export default function PrivacyPage() {
+  // Student volunteer details show once Community Skill Exchange is on.
+  const community = env.NEXT_PUBLIC_COMMUNITY_ENABLED;
+
   return (
     <PublicPage
       title="Privacy Policy"
-      intro={<p>Last updated: October 19, 2026</p>}
+      intro={<p>Last updated: October 21, 2026</p>}
     >
       <Prose>
         <p>
@@ -71,6 +75,30 @@ export default function PrivacyPage() {
             card details are handled by Stripe, our payment provider. We never
             see or store your full card number.
           </li>
+          {community && (
+            <>
+              <li>
+                <strong>Student volunteers:</strong> your name, whether
+                you&apos;re 16 or 17 or 18 and older, the skills, introduction
+                and availability you add, the families you volunteer with, your
+                sessions, the time you log and what you taught, and your
+                caregivers&apos; confirmations.
+              </li>
+              <li>
+                <strong>
+                  Parent or guardian approval (students aged 16 or 17):
+                </strong>{" "}
+                your parent or guardian&apos;s email address, and when they
+                approved or declined, with the name they typed.
+              </li>
+              <li>
+                <strong>Community sessions (caregivers and learners):</strong>{" "}
+                the sessions you plan or join, who they&apos;re with, when they
+                happen, and whether a learner said yes or &quot;not this
+                time&quot;.
+              </li>
+            </>
+          )}
           <li>
             <strong>Contact messages:</strong> if you use our Contact or
             Organizations form, your name, email and message.
@@ -112,6 +140,23 @@ export default function PrivacyPage() {
             it, and you can stop sharing at any time. If you remove the
             connection, they can no longer see any of this.
           </li>
+          {community && (
+            <>
+              <li>
+                <strong>Caregivers in a student&apos;s community</strong> can
+                see that student&apos;s name, introduction, availability and
+                skills, and the sessions and hours they have with that family.
+                They never see a parent or guardian&apos;s email.
+              </li>
+              <li>
+                <strong>Learners in a session</strong> see the student&apos;s
+                first name and the session&apos;s topic, time and joining
+                details. Students see only the first names of the learners a
+                caregiver lets them help, never their lessons, budgets, messages
+                or other information.
+              </li>
+            </>
+          )}
           <li>
             <strong>The GoldenGuide team</strong> can see account details (like
             names and email addresses) to run the service, answer questions and
@@ -131,10 +176,11 @@ export default function PrivacyPage() {
         <h2>Services we use</h2>
         <p>
           We use a small number of trusted companies to run GoldenGuide:
-          Supabase (our database and sign-in), Vercel (website hosting), Stripe
-          (payments for caregivers), and Google (only if you choose
-          &quot;Continue with Google&quot;). They handle information only to
-          provide their service to us.
+          Supabase (our database and sign-in), Vercel (website hosting), Resend
+          (sending our emails, like sign-in links), Stripe (payments for
+          caregivers), and Google (only if you choose &quot;Continue with
+          Google&quot;). They handle information only to provide their service
+          to us.
         </p>
 
         <h2>Cookies and your device</h2>
@@ -199,8 +245,9 @@ export default function PrivacyPage() {
 
         <h2>Age</h2>
         <p>
-          GoldenGuide is meant for adults. You must be 18 or older to sign up,
-          and we don&apos;t knowingly collect information from children.
+          {community
+            ? "GoldenGuide is meant for adults. You must be 18 or older to sign up, except student volunteers aged 16 or 17, who need a parent or guardian's approval first. We don't knowingly collect information from anyone under 16. A parent or guardian can ask us to delete their child's account at any time."
+            : "GoldenGuide is meant for adults. You must be 18 or older to sign up, and we don't knowingly collect information from children."}
         </p>
 
         <h2>Changes to this policy</h2>

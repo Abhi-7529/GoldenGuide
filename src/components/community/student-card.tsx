@@ -94,6 +94,13 @@ export function StudentCard({
             </span>
           </div>
           {!isActive && <Badge variant="outline">No longer active</Badge>}
+          {isActive && !student.cleared && (
+            <Badge variant="outline">
+              {student.guardian_status === "declined"
+                ? "Parent didn't approve"
+                : "Waiting for parent approval"}
+            </Badge>
+          )}
         </div>
 
         {(student.intro || student.availability || student.interests) && (
@@ -144,7 +151,16 @@ export function StudentCard({
           )}
         </div>
 
-        {isActive && (
+        {isActive && !student.cleared && (
+          <p className="rounded-xl border border-border bg-accent/40 p-3 text-sm">
+            {student.display_name.split(" ")[0]} is under 18.{" "}
+            {student.guardian_status === "declined"
+              ? "Their parent or guardian didn't approve, so they can't help anyone."
+              : "We've asked their parent or guardian to approve them. Until then, they can't help anyone or join sessions."}
+          </p>
+        )}
+
+        {isActive && student.cleared && (
           <fieldset className="flex flex-col gap-2">
             <legend className="mb-2 text-sm font-medium">
               Who can {student.display_name.split(" ")[0]} help?
