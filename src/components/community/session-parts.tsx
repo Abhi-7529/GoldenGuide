@@ -2,16 +2,20 @@ import Link from "next/link";
 import { IconArrowLeft, IconArrowRight } from "~/components/icons";
 import { Card, CardContent } from "~/components/ui/card";
 import {
+  EVENT_LABELS,
   FORMAT_LABELS,
   formatMinutes,
   formatSessionTime,
   hasStarted,
+  MEETING_PROVIDER_LABELS,
+  meetingProvider,
   type Session,
   type SessionEvent,
   type SessionStatus,
   STATUS_LABELS,
   STATUS_TONES,
   type StatusTone,
+  VERIFIED_BY_LABELS,
   VIEWER_STATUS_LABELS,
 } from "~/lib/community";
 import { cn } from "~/lib/utils";
@@ -178,14 +182,24 @@ export function SessionFacts({
       <dd>{FORMAT_LABELS[session.format]}</dd>
       {showJoinDetails && (
         <>
-          <dt className="text-muted-foreground">How to join</dt>
+          <dt className="text-muted-foreground">Meeting</dt>
           <dd>
-            {session.join_details || (
+            {session.meeting_url ? (
+              (MEETING_PROVIDER_LABELS[
+                meetingProvider(session.meeting_url) ?? "zoom"
+              ] ?? "Video call")
+            ) : (
               <span className="text-muted-foreground">
-                The caregiver hasn't added this yet.
+                No meeting link yet.
               </span>
             )}
           </dd>
+          {session.join_details && (
+            <>
+              <dt className="text-muted-foreground">Joining notes</dt>
+              <dd>{session.join_details}</dd>
+            </>
+          )}
         </>
       )}
       {session.description && (
@@ -210,7 +224,11 @@ export function SessionFacts({
         <>
           <dt className="text-muted-foreground">Verified by</dt>
           <dd suppressHydrationWarning>
-            {session.verified_by_name} on{" "}
+            {session.verified_by_name}
+            {session.verified_by_role &&
+              session.verified_by_role !== "admin" &&
+              ` (${VERIFIED_BY_LABELS[session.verified_by_role].toLowerCase()})`}{" "}
+            on{" "}
             {new Date(session.verified_at).toLocaleDateString("en-US", {
               timeZone,
               month: "long",
@@ -224,30 +242,11 @@ export function SessionFacts({
   );
 }
 
-const EVENT_LABELS: Record<string, string> = {
-  created: "planned the session",
-  requested: "asked for the session",
-  approve: "approved it",
-  reject: "declined the request",
-  accept: "accepted",
-  decline: "declined",
-  cancel: "canceled it",
-  canceled: "canceled it",
-  updated: "updated the details",
-  rescheduled: "changed the time",
-  submitted: "logged their time",
-  resubmitted: "changed the logged time",
-  verify: "verified the time",
-  request_correction: "asked for a correction",
-  dispute: "disputed the record",
-  learner_yes: "said they'd like this session",
-  learner_declined: "said not this time",
-};
-
 const ACTOR_LABELS = {
   caregiver: "Caregiver",
   student: "Student",
   learner: "Learner",
+  admin: "GoldenGuide",
 } as const;
 
 /** The audit history of a session, newest first. */

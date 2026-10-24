@@ -4,7 +4,7 @@ import { SessionForm } from "~/components/community/session-form";
 import { BackLink } from "~/components/community/session-parts";
 import { Card, CardContent } from "~/components/ui/card";
 import { env } from "~/env";
-import { isCleared, PLANNED_MINUTES } from "~/lib/community";
+import { formatMinutes, isCleared, PLANNED_MINUTES } from "~/lib/community";
 import { createClient } from "~/lib/supabase/server";
 import type { Connection } from "~/lib/types";
 
@@ -18,17 +18,20 @@ export default async function NewCaregiverSessionPage() {
   const caregiverId = claimsData?.claims.sub;
   if (!caregiverId) redirect("/login");
 
-  const [{ data: memberRows }, { data: connections }] = await Promise.all([
-    supabase
-      .from("community_members")
-      .select(
-        "student_id, student_profiles(display_name, age_group, guardian_status)",
-      )
-      .eq("caregiver_id", caregiverId)
-      .eq("status", "active")
-      .order("joined_at", { ascending: true }),
-    supabase.rpc("get_my_connections"),
-  ]);
+  const [{ data: memberRows }, { data: connections }, { data: maxData }] =
+    await Promise.all([
+      supabase
+        .from("community_members")
+        .select(
+          "student_id, student_profiles(display_name, age_group, guardian_status)",
+        )
+        .eq("caregiver_id", caregiverId)
+        .eq("status", "active")
+        .order("joined_at", { ascending: true }),
+      supabase.rpc("get_my_connections"),
+      supabase.rpc("my_max_session_minutes"),
+    ]);
+  const maxMinutes = (maxData as number | null) ?? PLANNED_MINUTES;
 
   const students = (
     (memberRows as unknown as
@@ -58,9 +61,9 @@ export default async function NewCaregiverSessionPage() {
         <BackLink href="/caregiver/community">Back to Community</BackLink>
         <h1 className="text-xl font-semibold">Plan a session</h1>
         <p className="text-sm text-muted-foreground">
-          Choose who will learn together, and when. Sessions are{" "}
-          {PLANNED_MINUTES} minutes for now; the real time given is recorded
-          afterwards.
+          Choose who will learn together, when, and for how long (up to{" "}
+          {formatMinutes(maxMinutes)} on your plan). The real time given is
+          recorded afterwards.
         </p>
       </div>
 
@@ -77,6 +80,7 @@ export default async function NewCaregiverSessionPage() {
           <CardContent className="py-6">
             <SessionForm
               mode="caregiver"
+              maxMinutes={maxMinutes}
               students={students}
               learners={learners}
               sessionsPath="/caregiver/community/sessions"

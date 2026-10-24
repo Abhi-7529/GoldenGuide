@@ -1,6 +1,7 @@
 -- Permission tests for the Community Skill Exchange
--- (migrations 20261021030818_community_skill_exchange and
--- 20261021050306_community_safety_rules).
+-- (migrations 20261021030818_community_skill_exchange,
+-- 20261021050306_community_safety_rules and the session-length rule from
+-- 20261024202801_community_phase2).
 --
 -- Runs inside one transaction that is rolled back at the end, so it leaves
 -- no data behind. It makes throwaway users and acts as each of them through
@@ -348,9 +349,9 @@ select pg_temp.eq('7 Sky now sees Lou (first name only), not Lena',
 select pg_temp.err('7 Sky still can''t ask for a session with Lena',
   pg_temp.run('c0000000-0000-4000-8000-0000000005e1', $q$select public.student_request_session('c0000000-0000-4000-8000-0000000000a2', 'Email', '', 'remote', now() + interval '2 days', 30)::text$q$),
   'approved');
-select pg_temp.err('7 sessions longer than 30 minutes can''t be planned yet',
-  pg_temp.run('c0000000-0000-4000-8000-0000000005e1', $q$select public.student_request_session('c0000000-0000-4000-8000-0000000000a1', 'Email', '', 'remote', now() + interval '2 days', 45)::text$q$),
-  'up to 30 minutes');
+select pg_temp.err('7 sessions can''t go past the family''s limit (2 hours on Family)',
+  pg_temp.run('c0000000-0000-4000-8000-0000000005e1', $q$select public.student_request_session('c0000000-0000-4000-8000-0000000000a1', 'Email', '', 'remote', now() + interval '2 days', 121)::text$q$),
+  'up to 120 minutes');
 select pg_temp.err('7 sessions can''t be planned in the past',
   pg_temp.run('c0000000-0000-4000-8000-0000000005e1', $q$select public.student_request_session('c0000000-0000-4000-8000-0000000000a1', 'Email', '', 'remote', now() - interval '1 hour', 30)::text$q$),
   'future');

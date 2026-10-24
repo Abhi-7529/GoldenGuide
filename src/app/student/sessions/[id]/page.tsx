@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
+import { JoinMeetingButton } from "~/components/community/join-meeting-button";
+import { SessionNotesEditor } from "~/components/community/session-notes";
 import {
   BackLink,
   SessionFacts,
@@ -8,8 +10,8 @@ import {
 } from "~/components/community/session-parts";
 import { StudentSessionActions } from "~/components/community/student-session-actions";
 import { Card, CardContent } from "~/components/ui/card";
-import { hasStarted, NOTE_STATUSES } from "~/lib/community";
-import { loadSession, loadTimeZone } from "~/lib/community-data";
+import { hasStarted, NOTE_STATUSES, NOTES_STATUSES } from "~/lib/community";
+import { loadNotes, loadSession, loadTimeZone } from "~/lib/community-data";
 import { createClient } from "~/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Session" };
@@ -25,9 +27,10 @@ export default async function StudentSessionPage({
   const userId = claimsData?.claims.sub;
   if (!userId) redirect("/login");
 
-  const [{ session, events }, timeZone] = await Promise.all([
+  const [{ session, events }, timeZone, notesById] = await Promise.all([
     loadSession(supabase, id),
     loadTimeZone(supabase, userId),
+    loadNotes(supabase, [id]),
   ]);
   if (!session || session.student_id !== userId) notFound();
 
@@ -57,7 +60,18 @@ export default async function StudentSessionPage({
         )}
       </div>
 
+      <JoinMeetingButton session={session} />
+
       <StudentSessionActions session={session} />
+
+      {NOTES_STATUSES.includes(session.status) && (
+        <SessionNotesEditor
+          sessionId={session.id}
+          learnerName={session.learner_name}
+          caregiverName={caregiverFirst}
+          initial={notesById.get(session.id) ?? null}
+        />
+      )}
 
       <Card>
         <CardContent className="py-5">

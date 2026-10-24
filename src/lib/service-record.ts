@@ -15,6 +15,7 @@ export type ServiceRecordRow = {
   topic: string;
   activity: string;
   verifier: string;
+  verifierRole: "caregiver" | "learner" | "admin";
   verifiedOn: string;
 };
 
@@ -48,6 +49,7 @@ export async function loadServiceRecord(
     topic: s.topic,
     activity: s.activity_notes,
     verifier: s.verified_by_name ?? s.caregiver_name,
+    verifierRole: s.verified_by_role ?? "caregiver",
     verifiedOn: s.verified_at ? day(s.verified_at) : "",
   }));
 
