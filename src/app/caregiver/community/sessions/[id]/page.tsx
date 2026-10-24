@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { CaregiverSessionActions } from "~/components/community/caregiver-session-actions";
+import { JoinMeetingButton } from "~/components/community/join-meeting-button";
+import { SharedSessionNotes } from "~/components/community/session-notes";
 import {
   BackLink,
   SessionFacts,
@@ -9,8 +11,13 @@ import {
 } from "~/components/community/session-parts";
 import { Card, CardContent } from "~/components/ui/card";
 import { env } from "~/env";
-import { hasStarted, NOTE_STATUSES } from "~/lib/community";
-import { loadSession, loadTimeZone } from "~/lib/community-data";
+import {
+  hasStarted,
+  NOTE_STATUSES,
+  NOTES_STATUSES,
+  PLANNED_MINUTES,
+} from "~/lib/community";
+import { loadNotes, loadSession, loadTimeZone } from "~/lib/community-data";
 import { createClient } from "~/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Session" };
@@ -28,11 +35,16 @@ export default async function CaregiverSessionPage({
   const userId = claimsData?.claims.sub;
   if (!userId) redirect("/login");
 
-  const [{ session, events }, timeZone] = await Promise.all([
-    loadSession(supabase, id),
-    loadTimeZone(supabase, userId),
-  ]);
+  const [{ session, events }, timeZone, notesById, { data: maxData }] =
+    await Promise.all([
+      loadSession(supabase, id),
+      loadTimeZone(supabase, userId),
+      loadNotes(supabase, [id]),
+      supabase.rpc("my_max_session_minutes"),
+    ]);
   if (!session || session.caregiver_id !== userId) notFound();
+  // RLS only returns the notes once the student shares them.
+  const notes = notesById.get(session.id);
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -63,7 +75,22 @@ export default async function CaregiverSessionPage({
         )}
       </div>
 
-      <CaregiverSessionActions session={session} />
+      <JoinMeetingButton session={session} />
+
+      <CaregiverSessionActions
+        session={session}
+        maxMinutes={(maxData as number | null) ?? PLANNED_MINUTES}
+      />
+
+      {notes ? (
+        <SharedSessionNotes notes={notes} studentName={session.student_name} />
+      ) : (
+        NOTES_STATUSES.includes(session.status) && (
+          <p className="text-sm text-muted-foreground">
+            {session.student_name} hasn't shared session notes yet.
+          </p>
+        )
+      )}
 
       <Card>
         <CardContent className="py-5">

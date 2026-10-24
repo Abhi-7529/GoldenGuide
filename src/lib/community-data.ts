@@ -6,6 +6,7 @@ import {
   SESSION_COLUMNS,
   type Session,
   type SessionEvent,
+  type SessionNotes,
 } from "~/lib/community";
 import { DEFAULT_TIME_ZONE } from "~/lib/membership";
 import type { createClient } from "~/lib/supabase/server";
@@ -51,4 +52,19 @@ export async function loadSession(supabase: SupabaseClient, id: string) {
     session: session as Session | null,
     events: (events as SessionEvent[] | null) ?? [],
   };
+}
+
+/** Notes the viewer can read for these sessions (RLS: own, or shared). */
+export async function loadNotes(
+  supabase: SupabaseClient,
+  sessionIds: string[],
+) {
+  if (sessionIds.length === 0) return new Map<string, SessionNotes>();
+  const { data } = await supabase
+    .from("session_notes")
+    .select("session_id, body, next_steps, shared_at, updated_at")
+    .in("session_id", sessionIds);
+  return new Map(
+    ((data as SessionNotes[] | null) ?? []).map((n) => [n.session_id, n]),
+  );
 }

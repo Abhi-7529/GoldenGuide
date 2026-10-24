@@ -21,6 +21,7 @@ export function StudentSessionActions({ session }: { session: Session }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
+  const [confirmNotHeld, setConfirmNotHeld] = useState(false);
   const [logging, setLogging] = useState(
     session.status === "correction_requested" ||
       (session.status === "scheduled" && hasStarted(session)),
@@ -53,6 +54,24 @@ export function StudentSessionActions({ session }: { session: Session }) {
       return;
     }
     setConfirmCancel(false);
+    router.refresh();
+  }
+
+  /** The session was scheduled but didn't take place. */
+  async function reportNotHeld() {
+    setError(null);
+    setBusy(true);
+    const supabase = createClient();
+    const { error: rpcError } = await supabase.rpc("student_report_not_held", {
+      p_session: session.id,
+    });
+    setBusy(false);
+    if (rpcError) {
+      setError(rpcError.message);
+      return;
+    }
+    setConfirmNotHeld(false);
+    setLogging(false);
     router.refresh();
   }
 
@@ -159,9 +178,46 @@ export function StudentSessionActions({ session }: { session: Session }) {
                   Never mind
                 </Button>
               )}
+            {session.status === "scheduled" &&
+              (confirmNotHeld ? (
+                <span className="flex flex-wrap items-center gap-2 rounded-xl border border-destructive/40 p-2">
+                  <span className="text-sm">
+                    Mark this session as not happened? No time is counted.
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="destructive"
+                    disabled={busy}
+                    onClick={() => void reportNotHeld()}
+                  >
+                    Yes, it didn't happen
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    disabled={busy}
+                    onClick={() => setConfirmNotHeld(false)}
+                  >
+                    Cancel
+                  </Button>
+                </span>
+              ) : (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={() => setConfirmNotHeld(true)}
+                >
+                  It didn't happen
+                </Button>
+              ))}
           </div>
           <p className="text-sm text-muted-foreground">
-            The caregiver checks your record. You can't verify your own hours.
+            {session.learner_name} or the family's caregiver confirms your
+            record. You can't verify your own hours, and opening the meeting
+            link doesn't count as time.
           </p>
         </form>
       ) : confirmCancel ? (

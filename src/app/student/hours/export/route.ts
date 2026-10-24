@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
-import { SERVICE_RECORD_DISCLAIMER, VERIFICATION_NOTE } from "~/lib/community";
+import {
+  SERVICE_RECORD_DISCLAIMER,
+  VERIFICATION_NOTE,
+  VERIFIED_BY_LABELS,
+} from "~/lib/community";
 import { loadServiceRecord } from "~/lib/service-record";
 import { createClient } from "~/lib/supabase/server";
 
@@ -41,7 +45,8 @@ export async function GET() {
       "Hours",
       "Topic",
       "What was taught",
-      "Confirmed by (caregiver)",
+      "Confirmed by",
+      "Confirmed as",
       "Verification date",
       "Status",
     ],
@@ -53,6 +58,7 @@ export async function GET() {
       row.topic,
       row.activity,
       row.verifier,
+      VERIFIED_BY_LABELS[row.verifierRole],
       row.verifiedOn,
       "Verified",
     ]),

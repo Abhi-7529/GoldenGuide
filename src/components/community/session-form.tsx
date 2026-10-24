@@ -1,13 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useState } from "react";
+import {
+  MeetingLinkField,
+  meetingLinkOk,
+} from "~/components/community/meeting-link-field";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { PLANNED_MINUTES } from "~/lib/community";
+import {
+  DURATION_OPTIONS,
+  FAMILY_MAX_MINUTES,
+  formatMinutes,
+  MEETING_PROVIDER_LIMITS_NOTE,
+  PLANNED_MINUTES,
+} from "~/lib/community";
 import { createClient } from "~/lib/supabase/client";
 
 type Option = { id: string; name: string };
@@ -21,10 +32,38 @@ function localNow() {
     .slice(0, 16);
 }
 
+/** A length picker, up to the family's limit (the database checks too). */
+export function DurationSelect({
+  id,
+  value,
+  maxMinutes,
+  onChange,
+}: {
+  id: string;
+  value: number;
+  maxMinutes: number;
+  onChange: (minutes: number) => void;
+}) {
+  return (
+    <Select
+      id={id}
+      value={value}
+      onChange={(e) => onChange(Number(e.target.value))}
+    >
+      {DURATION_OPTIONS.filter((m) => m <= maxMinutes).map((m) => (
+        <option key={m} value={m}>
+          {formatMinutes(m)}
+        </option>
+      ))}
+    </Select>
+  );
+}
+
 /**
- * Plans a session. Caregivers choose the student and learner and can add
- * joining details; students choose from the learners caregivers approved
- * them for, and the caregiver approves the request.
+ * Plans a session. Caregivers choose the student and learner, the length
+ * (up to 2 hours on GoldenGuide Family) and the meeting link; students
+ * choose from the learners caregivers approved them for, and the caregiver
+ * approves the request.
  */
 export function SessionForm(
   props:
@@ -32,13 +71,19 @@ export function SessionForm(
         mode: "caregiver";
         students: Option[];
         learners: Option[];
+        /** The longest session this caregiver can plan. */
+        maxMinutes: number;
         /** Base path for the new session's page. */
         sessionsPath: string;
       }
     | {
         mode: "student";
-        /** Approved learners, grouped by family. */
-        families: { caregiverName: string; learners: Option[] }[];
+        /** Approved learners, grouped by family, with each family's limit. */
+        families: {
+          caregiverName: string;
+          maxMinutes: number;
+          learners: Option[];
+        }[];
         sessionsPath: string;
       },
 ) {
@@ -54,9 +99,18 @@ export function SessionForm(
   const [topic, setTopic] = useState("");
   const [description, setDescription] = useState("");
   const [joinDetails, setJoinDetails] = useState("");
+  const [meetingUrl, setMeetingUrl] = useState("");
+  const [minutes, setMinutes] = useState(PLANNED_MINUTES);
   const [when, setWhen] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const maxMinutes =
+    props.mode === "caregiver"
+      ? props.maxMinutes
+      : (props.families.find((f) => f.learners.some((l) => l.id === learnerId))
+          ?.maxMinutes ?? PLANNED_MINUTES);
+  const chosenMinutes = Math.min(minutes, maxMinutes);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -66,19 +120,23 @@ export function SessionForm(
       setError("Please choose a date and time.");
       return;
     }
+    if (!meetingLinkOk(meetingUrl)) {
+      setError("Please check the meeting link, or leave it empty for now.");
+      return;
+    }
     setSaving(true);
     const supabase = createClient();
     const { data, error: rpcError } =
       props.mode === "caregiver"
-        ? await supabase.rpc("caregiver_create_session", {
+        ? await supabase.rpc("caregiver_plan_session", {
             p_student: studentId,
             p_learner: learnerId,
             p_topic: topic,
             p_description: description,
-            p_format: "remote",
             p_join_details: joinDetails,
+            p_meeting_url: meetingUrl,
             p_scheduled_at: scheduledAt.toISOString(),
-            p_planned_minutes: PLANNED_MINUTES,
+            p_planned_minutes: chosenMinutes,
           })
         : await supabase.rpc("student_request_session", {
             p_learner: learnerId,
@@ -86,7 +144,7 @@ export function SessionForm(
             p_description: description,
             p_format: "remote",
             p_scheduled_at: scheduledAt.toISOString(),
-            p_planned_minutes: PLANNED_MINUTES,
+            p_planned_minutes: chosenMinutes,
           });
     if (rpcError || !data) {
       setSaving(false);
@@ -194,41 +252,70 @@ export function SessionForm(
             onChange={(e) => setWhen(e.target.value)}
             required
           />
+          <p className="text-sm text-muted-foreground">
+            In your own time zone.
+          </p>
         </div>
         <div className="flex flex-col gap-1.5">
-          <span className="text-sm font-medium">Length</span>
-          <p className="flex h-11 items-center text-base text-muted-foreground">
-            {PLANNED_MINUTES} minutes
-          </p>
+          <Label htmlFor="length">Length</Label>
+          <DurationSelect
+            id="length"
+            value={chosenMinutes}
+            maxMinutes={maxMinutes}
+            onChange={setMinutes}
+          />
+          {props.mode === "caregiver" && maxMinutes < FAMILY_MAX_MINUTES && (
+            <p className="text-sm text-muted-foreground">
+              Up to 30 minutes on the Free plan.{" "}
+              <Link
+                href="/caregiver/membership"
+                className="font-medium text-primary-strong underline-offset-4 hover:underline"
+              >
+                GoldenGuide Family allows up to 2 hours.
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 
-      <p className="text-sm text-muted-foreground">
-        Sessions are by video or phone call for now. Plan how to connect, and
-        never share home addresses or meet in person.
-      </p>
-
       {props.mode === "caregiver" && (
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="joinDetails" className="flex-wrap gap-x-1">
-            How to join{" "}
-            <span className="font-normal text-muted-foreground">
-              (optional, you can add this later)
-            </span>
-          </Label>
-          <Input
-            id="joinDetails"
-            value={joinDetails}
-            maxLength={500}
-            onChange={(e) => setJoinDetails(e.target.value)}
-            placeholder="e.g. FaceTime on Mom's iPad, or a video call link"
+        <>
+          <MeetingLinkField
+            id="meetingUrl"
+            value={meetingUrl}
+            onChange={setMeetingUrl}
           />
-          <p className="text-sm text-muted-foreground">
-            Only the student and learner in this session see this. Don't share
-            home addresses, account details or passwords.
-          </p>
-        </div>
+          {chosenMinutes > 40 && (
+            <p className="text-sm text-muted-foreground">
+              {MEETING_PROVIDER_LIMITS_NOTE}
+            </p>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="joinDetails" className="flex-wrap gap-x-1">
+              Joining notes{" "}
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
+            </Label>
+            <Input
+              id="joinDetails"
+              value={joinDetails}
+              maxLength={500}
+              onChange={(e) => setJoinDetails(e.target.value)}
+              placeholder="e.g. Use Mom's iPad; the passcode is in the invite"
+            />
+            <p className="text-sm text-muted-foreground">
+              Only the student and learner in this session see these. Don't
+              share home addresses, account details or passwords.
+            </p>
+          </div>
+        </>
       )}
+
+      <p className="text-sm text-muted-foreground">
+        Sessions happen by video or phone call. GoldenGuide doesn't host or
+        record calls; the meeting opens in its own app or tab.
+      </p>
 
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -245,8 +332,8 @@ export function SessionForm(
       </Button>
       <p className="-mt-2 text-sm text-muted-foreground">
         {props.mode === "caregiver"
-          ? "The student will be asked to accept."
-          : "The caregiver will be asked to approve it."}
+          ? "The student will be asked to accept, including the length."
+          : "The caregiver will be asked to approve it, including the length."}
       </p>
     </form>
   );

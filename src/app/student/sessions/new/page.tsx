@@ -13,7 +13,11 @@ export default async function NewStudentSessionPage() {
   const { data: communityData } = await supabase.rpc("my_student_communities");
   const families = ((communityData as StudentCommunity[] | null) ?? [])
     .filter((c) => c.status === "active" && c.learners.length > 0)
-    .map((c) => ({ caregiverName: c.caregiver_name, learners: c.learners }));
+    .map((c) => ({
+      caregiverName: c.caregiver_name,
+      maxMinutes: c.max_minutes ?? 30,
+      learners: c.learners,
+    }));
 
   if (families.length === 0) redirect("/student/sessions");
 

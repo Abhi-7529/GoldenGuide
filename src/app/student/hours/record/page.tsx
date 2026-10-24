@@ -7,6 +7,7 @@ import {
   formatMinutes,
   SERVICE_RECORD_DISCLAIMER,
   VERIFICATION_NOTE,
+  VERIFIED_BY_LABELS,
 } from "~/lib/community";
 import { loadServiceRecord } from "~/lib/service-record";
 import { createClient } from "~/lib/supabase/server";
@@ -77,7 +78,8 @@ export default async function ServiceRecordPage() {
                     <td className="py-2 pr-3">
                       {row.verifier}
                       <span className="block text-xs text-muted-foreground">
-                        Caregiver, on {row.verifiedOn}
+                        {VERIFIED_BY_LABELS[row.verifierRole]}, on{" "}
+                        {row.verifiedOn}
                       </span>
                     </td>
                     <td className="py-2">Verified</td>

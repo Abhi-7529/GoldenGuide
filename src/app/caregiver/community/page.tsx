@@ -177,6 +177,14 @@ export default async function CaregiverCommunityPage() {
             )}
           </SessionList>
         ))}
+        {mine.length > 0 && (
+          <Link
+            href="/caregiver/community/history"
+            className="w-fit text-sm font-medium text-primary-strong underline-offset-4 hover:underline"
+          >
+            See all sessions
+          </Link>
+        )}
       </section>
 
       <InvitationManager

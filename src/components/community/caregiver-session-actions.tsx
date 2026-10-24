@@ -2,6 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import {
+  MeetingLinkField,
+  meetingLinkOk,
+} from "~/components/community/meeting-link-field";
+import { DurationSelect } from "~/components/community/session-form";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -30,7 +35,14 @@ function toLocalInput(iso: string) {
     .slice(0, 16);
 }
 
-export function CaregiverSessionActions({ session }: { session: Session }) {
+export function CaregiverSessionActions({
+  session,
+  maxMinutes,
+}: {
+  session: Session;
+  /** The longest session this caregiver can plan now. */
+  maxMinutes: number;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +52,10 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
   const [editing, setEditing] = useState(false);
   const [when, setWhen] = useState(() => toLocalInput(session.scheduled_at));
   const [joinDetails, setJoinDetails] = useState(session.join_details);
+  const [meetingUrl, setMeetingUrl] = useState(session.meeting_url ?? "");
+  // A length agreed under Family stays available for this session.
+  const lengthLimit = Math.max(maxMinutes, session.planned_minutes);
+  const [minutes, setMinutes] = useState(session.planned_minutes);
 
   const open = OPEN_STATUSES.includes(session.status);
   // An invitation or request whose time went by before anyone confirmed it.
@@ -75,8 +91,23 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
       setError("Please choose a date and time.");
       return;
     }
+    if (!meetingLinkOk(meetingUrl)) {
+      setError("Please check the meeting link, or leave it empty.");
+      return;
+    }
     setBusy(true);
     const supabase = createClient();
+    if (meetingUrl.trim() !== (session.meeting_url ?? "")) {
+      const { error: linkError } = await supabase.rpc(
+        "caregiver_set_meeting_link",
+        { p_session: session.id, p_url: meetingUrl },
+      );
+      if (linkError) {
+        setBusy(false);
+        setError(linkError.message);
+        return;
+      }
+    }
     const { error: rpcError } = await supabase.rpc("caregiver_update_session", {
       p_session: session.id,
       // Unchanged times keep their exact value, so only a real change sends
@@ -85,7 +116,7 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
         toLocalInput(session.scheduled_at) === when
           ? session.scheduled_at
           : scheduledAt.toISOString(),
-      p_planned_minutes: session.planned_minutes,
+      p_planned_minutes: minutes,
       p_join_details: joinDetails,
     });
     setBusy(false);
@@ -164,18 +195,33 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
 
       {editing ? (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="newWhen">Date and time</Label>
-            <Input
-              id="newWhen"
-              type="datetime-local"
-              value={when}
-              onChange={(e) => setWhen(e.target.value)}
-              className="sm:max-w-xs"
-            />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="newWhen">Date and time</Label>
+              <Input
+                id="newWhen"
+                type="datetime-local"
+                value={when}
+                onChange={(e) => setWhen(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="newLength">Length</Label>
+              <DurationSelect
+                id="newLength"
+                value={minutes}
+                maxMinutes={lengthLimit}
+                onChange={setMinutes}
+              />
+            </div>
           </div>
+          <MeetingLinkField
+            id="newMeetingUrl"
+            value={meetingUrl}
+            onChange={setMeetingUrl}
+          />
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="newJoin">How to join</Label>
+            <Label htmlFor="newJoin">Joining notes</Label>
             <Input
               id="newJoin"
               value={joinDetails}
@@ -185,7 +231,8 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
             />
           </div>
           <p className="text-sm text-muted-foreground">
-            A new time goes back to the student to confirm.
+            A new time or length goes back to the student to confirm. Changing
+            the meeting link doesn't.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button disabled={busy} onClick={() => void saveChanges()}>
@@ -270,7 +317,7 @@ export function CaregiverSessionActions({ session }: { session: Session }) {
               disabled={busy}
               onClick={() => setEditing(true)}
             >
-              Change time or joining details
+              Change time, length or meeting link
             </Button>
           )}
           {session.status === "pending_approval" && (

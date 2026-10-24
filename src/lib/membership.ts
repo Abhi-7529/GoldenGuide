@@ -3,6 +3,7 @@
 // migrations); this module decides what to show so learners never hit those
 // limits unexpectedly.
 
+import { env } from "~/env";
 import {
   loadLearnerPath,
   type PathLesson,
@@ -48,6 +49,9 @@ export const PLANS = {
       "Unlimited lessons every day",
       "Assign lessons to each learner",
       "Unlimited practice on assigned and finished lessons",
+      ...(env.NEXT_PUBLIC_COMMUNITY_ENABLED
+        ? ["Community volunteer sessions up to 2 hours (Free: 30 minutes)"]
+        : []),
       ...SHARED_FEATURES,
     ],
   },
