@@ -17,7 +17,7 @@ export default function PrivacyPage() {
   return (
     <PublicPage
       title="Privacy Policy"
-      intro={<p>Last updated: October 21, 2026</p>}
+      intro={<p>Last updated: October 24, 2026</p>}
     >
       <Prose>
         <p>
@@ -81,8 +81,9 @@ export default function PrivacyPage() {
                 <strong>Student volunteers:</strong> your name, whether
                 you&apos;re 16 or 17 or 18 and older, the skills, introduction
                 and availability you add, the families you volunteer with, your
-                sessions, the time you log and what you taught, and your
-                caregivers&apos; confirmations.
+                sessions, the time you log and what you taught, the session
+                notes and next steps you write, and the confirmations of your
+                time.
               </li>
               <li>
                 <strong>
@@ -94,8 +95,17 @@ export default function PrivacyPage() {
               <li>
                 <strong>Community sessions (caregivers and learners):</strong>{" "}
                 the sessions you plan or join, who they&apos;re with, when they
-                happen, and whether a learner said yes or &quot;not this
-                time&quot;.
+                happen and for how long, the meeting link the caregiver adds,
+                whether a learner said yes or &quot;not this time&quot;, and
+                whether the learner or caregiver confirmed the time logged.
+              </li>
+              <li>
+                <strong>Video calls:</strong> GoldenGuide doesn&apos;t host,
+                record or store calls. A meeting link opens the meeting service
+                (like Zoom or Google Meet), which handles the call under its own
+                privacy policy. We don&apos;t know who joined or for how long;
+                volunteer time comes only from what the student logs and the
+                learner or caregiver confirms.
               </li>
             </>
           )}
@@ -119,6 +129,12 @@ export default function PrivacyPage() {
             To let a learner and their connected caregiver support each other.
           </li>
           <li>To handle memberships and payments for caregivers.</li>
+          {community && (
+            <li>
+              To run Community sessions and keep accurate records of the time
+              student volunteers give.
+            </li>
+          )}
           <li>To answer your questions and messages.</li>
           <li>To keep GoldenGuide safe and fix problems.</li>
           <li>
@@ -155,12 +171,25 @@ export default function PrivacyPage() {
                 caregiver lets them help, never their lessons, budgets, messages
                 or other information.
               </li>
+              <li>
+                <strong>Session notes</strong> are private to the student who
+                writes them until they choose to share them. Shared notes can be
+                read only by that session&apos;s learner and caregiver, and the
+                student can stop sharing at any time.
+              </li>
+              <li>
+                <strong>Meeting links</strong> can be seen only by the
+                session&apos;s caregiver, student and learner. They don&apos;t
+                appear in a session&apos;s history.
+              </li>
             </>
           )}
           <li>
             <strong>The GoldenGuide team</strong> can see account details (like
             names and email addresses) to run the service, answer questions and
             keep it safe.
+            {community &&
+              " For Community, our admin view shows session facts (like dates, lengths and confirmed time) so we can review disagreements about volunteer hours. It doesn't show session notes, and we don't read them unless we need to look into a safety concern or the law requires it."}
           </li>
           <li>
             <strong>Service providers</strong> handle information only to
@@ -200,6 +229,16 @@ export default function PrivacyPage() {
             instead choose to have it deleted at the end of that month. If you
             ask us to delete it, we aim to do so within 30 days.
           </li>
+          {community && (
+            <li>
+              Community sessions, notes and volunteer records stay while the
+              student&apos;s account is open, including after they leave a
+              family, so students keep a record of their hours. Deleting the
+              student&apos;s account deletes them. If a caregiver or learner
+              deletes their account, the student&apos;s record of time given
+              stays, without that person&apos;s account.
+            </li>
+          )}
           <li>
             Copies in our database provider&apos;s backups are removed as those
             backups expire on the provider&apos;s regular schedule.
